@@ -1,0 +1,71 @@
+/* Estilo del contenedor principal */
+.login-container {
+    background-image: url('../Images/backgrounds/banco-de-leche.jpg'); /* Ruta de tu imagen de fondo */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Estilo de la caja de login */
+  .login-box {
+    background: rgba(255, 255, 255, 0.782); /* Fondo blanco con transparencia */
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  /* Estilo del logo */
+  .logo {
+    max-width: 150px;
+    margin-bottom: 1rem;
+  }
+  .custom-logo-size {
+    width: 200px; /* Especifica el ancho en píxeles o porcentaje */
+    height: auto; /* Mantiene la proporción original */
+  }
+  
+  /* Estilo de los campos de input */
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    padding: 0.5rem;
+  }
+  
+  .input-group .icon {
+    margin-right: 0.5rem;
+    color: #666;
+  }
+  
+  .input-group input {
+    border: none;
+    outline: none;
+    background: transparent;
+    flex: 1;
+    padding: 0.5rem;
+  }
+  
+  /* Botón de login */
+  .btn-login {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 0.75rem;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-login:hover {
+    background-color: #0056b3;
+  }
+  

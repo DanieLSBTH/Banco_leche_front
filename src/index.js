@@ -3,6 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle';
+import 'primereact/resources/themes/lara-light-indigo/theme.css';  // Tema de PrimeReact
+import 'primereact/resources/primereact.min.css';                  // Componentes principales de PrimeReact
+import 'primeicons/primeicons.css';  
+
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
