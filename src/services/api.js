@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://banco-leche-backend.onrender.com/api', // Ajusta la URL según tu configuración
+  baseURL: 'https://banco-leche-backend.onrender.com/api', 
 });
 export const get = (url) => api.get(url);
 export const post = (url, data) => api.post(url, data);
