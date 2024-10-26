@@ -6,6 +6,7 @@ import { FaHospital, FaRobot, FaComments, FaCommentAlt, FaPaperPlane, FaUsers, F
 import './Navbar.css';
 import logo from '../Images/backgrounds/Logo_bancon.png';
 
+
 const NavbarComponent = () => {
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -88,7 +89,9 @@ const NavbarComponent = () => {
       <Button variant="outline-light" onClick={handleLogout} className="logout-btn">
         <FaSignOutAlt /> Cerrar Sesión
       </Button>
+      
     </>
+    
   );
 
   return (
@@ -114,8 +117,11 @@ const NavbarComponent = () => {
         
         {/* Desktop view */}
         <Navbar.Collapse id="navbar-content" className="d-none d-lg-flex justify-content-end">
+       
           {auth.token && <NavContent />}
+          
         </Navbar.Collapse>
+        
         
         {/* Mobile view */}
         <Offcanvas show={show} onHide={handleClose} placement="end" className="d-lg-none">
@@ -123,7 +129,9 @@ const NavbarComponent = () => {
             <Offcanvas.Title>Menu</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
+          
             {auth.token && <NavContent />}
+            
           </Offcanvas.Body>
         </Offcanvas>
       </Container>

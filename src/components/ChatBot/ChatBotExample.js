@@ -9,7 +9,7 @@ import ReactPlayer from 'react-player/youtube';
 const ChatBotExample = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { text: '¡Hola! Soy PediBot. ¿Cómo te llamas?', isBot: true }
+    { text: '¡Hola! Soy PediBot 🤖 ¿Cómo te llamas?', isBot: true }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -19,6 +19,13 @@ const ChatBotExample = () => {
   const [temaSeleccionado, setTemaSeleccionado] = useState(null);
   const [subtemaSeleccionado, setSubtemaSeleccionado] = useState(null);
   const [preguntaSeleccionada, setPreguntaSeleccionada] = useState(null);
+  const [temasDisponibles, setTemasDisponibles] = useState([]);
+  const [subtemasDisponibles, setSubtemasDisponibles] = useState([]);
+  const [preguntasDisponibles, setPreguntasDisponibles] = useState([]);
+  const [waitingForRestart, setWaitingForRestart] = useState(false);
+  const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
+  const [chatEnded, setChatEnded] = useState(false); // Nuevo estado para controlar si el chat se ha despedido
+
   const messageContainerRef = useRef(null);
 
   useEffect(() => {
@@ -27,19 +34,122 @@ const ChatBotExample = () => {
     }
   }, [messages]);
 
+  const mostrarMensajeConTyping = async (mensaje, delay = 1000) => {
+    setIsTyping(true);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    setIsTyping(false);
+    setMessages(prevMessages => [...prevMessages, { text: mensaje, isBot: true }]);
+  };
+  
+  const mostrarMensajesSecuenciales = async (mensajes, delayEntreMsg = 1000) => {
+    for (const mensaje of mensajes) {
+      await mostrarMensajeConTyping(mensaje, delayEntreMsg);
+    }
+  };
+
+  const validarEntrada = (input, opciones, tipo) => {
+    const numero = parseInt(input);
+    const numerosValidos = opciones.map(item => item.id_tema || item.id_subtema || item.id_chat);
+    
+    if (isNaN(numero)) {
+      return {
+        valido: false,
+        mensaje: `Por favor, ingresa solo números.`
+      };
+    }
+
+    if (!numerosValidos.includes(numero)) {
+      return {
+        valido: false,
+        mensaje: `Por favor, ingresa un número válido 🙁 entre ${Math.min(...numerosValidos)} y ${Math.max(...numerosValidos)}.`
+      };
+    }
+
+    return { valido: true };
+  };
+
+
   const handleSend = async () => {
     if (input.trim()) {
-      const newMessages = [
-        ...messages,
-        { text: input, isBot: false }
-      ];
+      const userMessage = input.trim().toLowerCase();
+      const newMessages = [...messages, { text: input, isBot: false }];
+      
       setMessages(newMessages);
       setInput('');
+       // Si el chat había terminado, reiniciar el ciclo de confirmación con cualquier entrada
+       if (chatEnded) {
+        setChatEnded(false);
+        setWaitingForConfirmation(true);
+        await mostrarMensajeConTyping("Soy PediBot estoy programado para informarte 🤖 ¿quieres informarte? puedes digitar Si/no");
+        return;
+      }
+       // Detectar si el mensaje es "gracias"
+    if (userMessage === 'gracias' ) {
+      // Reiniciar estados de selección
+      setTemaSeleccionado(null);
+      setSubtemaSeleccionado(null);
+      setPreguntaSeleccionada(null);
+      
+      // Mostrar mensaje de agradecimiento
+      await mostrarMensajeConTyping(`Es un placer poder informarte ${userName}, espero que sean de ayuda para ti 😊`);
+      
+      // Obtener y mostrar temas nuevamente
+     // Activar el estado de espera para la siguiente entrada
+     setWaitingForRestart(true);
+     return;
+    }else   if (userMessage === 'adios') {
+      setWaitingForConfirmation(false);
+      setChatEnded(true);
+      await mostrarMensajeConTyping(`¡Hasta luego ${userName}! Ha sido un placer ayudarte. Si necesitas más información, no dudes en volver a consultarme.`);
+      // Opcional: cerrar el chat después de un tiempo
+      setTimeout(() => {
+        handleClose();
+      }, 3000);
+    } 
 
+
+
+   
+    // Manejar el estado de espera después del agradecimiento
+    if (waitingForRestart) {
+      setWaitingForRestart(false);
+      setWaitingForConfirmation(true);
+      await mostrarMensajeConTyping("Soy PediBot estoy programado para informarte 🤖 ¿quieres informarte? puedes digitar Si/no");
+      return;
+    }
+    // Manejar la confirmación (Si/No)
+    if (waitingForConfirmation) {
+      if (userMessage === 'si') {
+        setWaitingForConfirmation(false);
+        // Reiniciar el ciclo
+        try {
+          const response = await fetch('https://banco-leche-backend.onrender.com/api/chat_temas/');
+          const temas = await response.json();
+          setTemasDisponibles(temas);
+          mostrarTemasUnoPorUno(temas, userName);
+        } catch (error) {
+          await mostrarMensajeConTyping('Lo siento, hubo un problema al consultar los temas.');
+        }
+      } else if (userMessage === 'no') {
+        setWaitingForConfirmation(false);
+        setChatEnded(true);
+        await mostrarMensajeConTyping(`¡Hasta luego ${userName}! Ha sido un placer ayudarte. Si necesitas más información, no dudes en volver a consultarme.`);
+        // Opcional: cerrar el chat después de un tiempo
+        setTimeout(() => {
+          handleClose();
+        }, 3000);
+      } else {
+        // Si la respuesta no es si/no, volver a preguntar
+        await mostrarMensajeConTyping("Por favor, responde con 'Si' o 'No'. ¿Quieres informarte?");
+      }
+      return;
+    }
+  
       if (!userName) {
+        // Manejo del nombre permanece igual
         setUserName(input);
         setGreetingSent(true);
-
+        
         setIsTyping(true);
         setTimeout(() => {
           setIsTyping(false);
@@ -53,7 +163,7 @@ const ChatBotExample = () => {
           try {
             const response = await fetch('https://banco-leche-backend.onrender.com/api/chat_temas/');
             const temas = await response.json();
-
+            setTemasDisponibles(temas);
             mostrarTemasUnoPorUno(temas, userName);
           } catch (error) {
             setIsTyping(false);
@@ -64,51 +174,97 @@ const ChatBotExample = () => {
           }
         }, 1000);
       } else if (temaSeleccionado && !subtemaSeleccionado) {
-        const temaId = parseInt(input);
-        if (!isNaN(temaId)) {
-          obtenerSubtemas(temaId);
-        } else {
+        const validacion = validarEntrada(input, temasDisponibles, 'tema');
+        if (!validacion.valido) {
           setMessages(prevMessages => [
             ...prevMessages,
-            { text: 'Por favor ingresa un número de tema válido.', isBot: true }
+            { text: validacion.mensaje, isBot: true }
           ]);
+          return;
         }
+        obtenerSubtemas(parseInt(input));
       } else if (subtemaSeleccionado && !preguntaSeleccionada) {
-        const subtemaId = parseInt(input);
-        if (!isNaN(subtemaId)) {
-          obtenerPreguntas(subtemaId);
-        } else {
+        const validacion = validarEntrada(input, subtemasDisponibles, 'subtema');
+        if (!validacion.valido) {
           setMessages(prevMessages => [
             ...prevMessages,
-            { text: 'Por favor ingresa un número de subtema válido.', isBot: true }
+            { text: validacion.mensaje, isBot: true }
           ]);
+          return;
         }
+        obtenerPreguntas(parseInt(input));
       } else if (preguntaSeleccionada) {
-        const idChat = parseInt(input);
-        if (!isNaN(idChat)) {
-          obtenerRespuestas(idChat);
-        } else {
+        const validacion = validarEntrada(input, preguntasDisponibles, 'pregunta');
+        if (!validacion.valido) {
           setMessages(prevMessages => [
             ...prevMessages,
-            { text: 'Por favor ingresa un número de pregunta válido.', isBot: true }
+            { text: validacion.mensaje, isBot: true }
           ]);
+          return;
         }
-      } else {
-        const botResponseDelay = Math.random() * 3000 + 1000;
-        setIsTyping(true);
-
-        setTimeout(() => {
-          setIsTyping(false);
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { text: 'Estoy aquí para ayudarte con cualquier pregunta que tengas.', isBot: true }
-          ]);
-        }, botResponseDelay);
+        obtenerRespuestas(parseInt(input));
       }
     }
   };
+  const resetAllStates = () => {
+    setTemaSeleccionado(null);
+    setSubtemaSeleccionado(null);
+    setPreguntaSeleccionada(null);
+    setWaitingForRestart(false);
+    setWaitingForConfirmation(false);
+    setTemasDisponibles([]);
+    setSubtemasDisponibles([]);
+    setPreguntasDisponibles([]);
+  };
 
-  const mostrarTemasUnoPorUno = (temas, nombreUsuario) => {
+
+  const obtenerSubtemas = async (id_tema) => {
+    try {
+      const response = await fetch(`https://banco-leche-backend.onrender.com/api/chat_subtemas/tema/${id_tema}`);
+      const subtemas = await response.json();
+      setSubtemasDisponibles(subtemas);
+
+      if (subtemas.length > 0) {
+        await mostrarMensajeConTyping('Puedo ayudarte informándote sobre estos subtemas 👀');
+
+        for (const subtema of subtemas) {
+          await mostrarMensajeConTyping(`Subtema ${subtema.id_subtema}: ${subtema.nombre}`);
+        }
+        
+        await mostrarMensajeConTyping('Por favor ingresa el número del subtema que te interesa 📝');
+        setSubtemaSeleccionado(true);
+      } else {
+        await mostrarMensajeConTyping('No se encontraron subtemas para este tema.');
+      }
+    } catch (error) {
+      await mostrarMensajeConTyping('Lo siento, hubo un problema al consultar los subtemas.');
+    }
+  };
+
+  const obtenerPreguntas = async (id_subtema) => {
+    try {
+      const response = await fetch(`https://banco-leche-backend.onrender.com/api/chat_respuestas/subtema/${id_subtema}`);
+      const preguntas = await response.json();
+      setPreguntasDisponibles(preguntas);
+
+      if (preguntas.length > 0) {
+        await mostrarMensajeConTyping('Aquí tienes algunas preguntas frecuentes relacionadas con este subtema:');
+
+        for (const pregunta of preguntas) {
+          await mostrarMensajeConTyping(`Pregunta ${pregunta.id_chat}: ${pregunta.pregunta}`);
+        }
+        
+        await mostrarMensajeConTyping('Por favor ingresa el número de la pregunta que te interesa 📝');
+        setPreguntaSeleccionada(true);
+      } else {
+        await mostrarMensajeConTyping('No se encontraron preguntas para este subtema.');
+      }
+    } catch (error) {
+      await mostrarMensajeConTyping('Lo siento, hubo un problema al consultar las preguntas 😟');
+    }
+  };
+
+  const mostrarTemasUnoPorUno = (temas, userName) => {
     let delay = 0;
     setIsTyping(true);
 
@@ -116,7 +272,7 @@ const ChatBotExample = () => {
       setIsTyping(false);
       setMessages(prevMessages => [
         ...prevMessages,
-        { text: `Con gusto, ${nombreUsuario}. Puedo ayudarte informándote sobre estos temas:`, isBot: true }
+        { text: `Con gusto ${userName}. Puedo ayudarte informándote sobre estos temas 🧐`, isBot: true }
       ]);
 
       temas.forEach((tema, index) => {
@@ -142,79 +298,13 @@ const ChatBotExample = () => {
         setIsTyping(false);
         setMessages(prevMessages => [
           ...prevMessages,
-          { text: 'Por favor ingresa el número del tema que te interesa.', isBot: true }
+          { text: 'Por favor ingresa el número del tema que te interesa 📝', isBot: true }
         ]);
       }, delay + 1000);
     }, 1000);
   };
 
-  const obtenerSubtemas = async (id_tema) => {
-    setIsTyping(true);
-    setMessages(prevMessages => [
-      ...prevMessages,
-      { text: 'Puedo ayudarte informándote sobre estos subtemas:', isBot: true }
-    ]);
-
-    try {
-      const response = await fetch(`https://banco-leche-backend.onrender.com/api/chat_subtemas/tema/${id_tema}`);
-      const subtemas = await response.json();
-
-      if (subtemas.length > 0) {
-        subtemas.forEach((subtema) => {
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { text: `Subtema ${subtema.id_subtema}: ${subtema.nombre}`, isBot: true }
-          ]);
-        });
-        setSubtemaSeleccionado(true);
-      } else {
-        setMessages(prevMessages => [
-          ...prevMessages,
-          { text: 'No se encontraron subtemas para este tema.', isBot: true }
-        ]);
-      }
-    } catch (error) {
-      setMessages(prevMessages => [
-        ...prevMessages,
-        { text: 'Lo siento, hubo un problema al consultar los subtemas.', isBot: true }
-      ]);
-    }
-    setIsTyping(false);
-  };
-
-  const obtenerPreguntas = async (id_subtema) => {
-    setIsTyping(true);
-    setMessages(prevMessages => [
-      ...prevMessages,
-      { text: 'Aquí tienes algunas preguntas frecuentes relacionadas con este subtema:', isBot: true }
-    ]);
-
-    try {
-      const response = await fetch(`https://banco-leche-backend.onrender.com/api/chat_respuestas/subtema/${id_subtema}`);
-      const preguntas = await response.json();
-
-      if (preguntas.length > 0) {
-        preguntas.forEach((pregunta) => {
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { text: `Pregunta ${pregunta.id_chat}: ${pregunta.pregunta}`, isBot: true }
-          ]);
-        });
-        setPreguntaSeleccionada(true);
-      } else {
-        setMessages(prevMessages => [
-          ...prevMessages,
-          { text: 'No se encontraron preguntas para este subtema.', isBot: true }
-        ]);
-      }
-    } catch (error) {
-      setMessages(prevMessages => [
-        ...prevMessages,
-        { text: 'Lo siento, hubo un problema al consultar las preguntas.', isBot: true }
-      ]);
-    }
-    setIsTyping(false);
-  };
+ 
 
   const obtenerRespuestas = async (id_chat) => {
     setIsTyping(true);
@@ -233,8 +323,10 @@ const ChatBotExample = () => {
 
         setMessages(prevMessages => [
           ...prevMessages,
-          { text: responseMessage, enlace, isBot: true }
-        ]);
+          { text: responseMessage, enlace, isBot: true },
+         ]);
+         mostrarMensajeConTyping('Si te quedaste con alguna duda puedes comunicarte a ☎️5555-5554 📠ext 54 ')
+       
       } else {
         setMessages(prevMessages => [
           ...prevMessages,

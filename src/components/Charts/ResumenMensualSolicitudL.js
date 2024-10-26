@@ -1,26 +1,19 @@
-import React, { useEffect, useState } from 'react'; 
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer
-} from 'recharts';
-import api from '../../services/api'; // Importa tu archivo api.js
+import React, { useEffect, useState } from 'react';
+import { Chart } from 'primereact/chart';
+import { MeterGroup } from 'primereact/metergroup';
+import api from '../../services/api';
 
 const ResumenMensualSolicitudL = () => {
-    const [chartData, setChartData] = useState([]);
+    const [chartData, setChartData] = useState({});
+    const [chartOptions, setChartOptions] = useState({});
+    const [metricData, setMetricData] = useState([]);
 
     useEffect(() => {
-        // Fetch data from the API using your api instance
-        api.get('/solicitud_de_leches/resumen/por-mes/')
-            .then(response => {
-                const data = response.data; // Obtiene los datos de la respuesta
+        const fetchData = async () => {
+            try {
+                const response = await api.get('/solicitud_de_leches/resumen/por-mes/');
+                const data = response.data;
 
-                // Transform the data to fit Recharts structure
                 const formattedData = data.asistencia.reduce((acc, curr) => {
                     const month = Object.keys(curr).find(key => key.includes('2024'));
                     if (month) {
@@ -36,29 +29,87 @@ const ResumenMensualSolicitudL = () => {
                     }
                     return acc;
                 }, []);
-                
-                setChartData(formattedData);
-            })
-            .catch(error => {
+
+                const totalBeneficiados = formattedData.reduce((acc, item) => acc + (item["recien nacidos beneficiados"] || 0), 0);
+                const totalLecheLitros = formattedData.reduce((acc, item) => acc + (item["leche distribuida litros"] || 0), 0);
+
+                const documentStyle = getComputedStyle(document.documentElement);
+                setChartData({
+                    labels: formattedData.map(item => item.mes),
+                    datasets: [
+                        {
+                            label: 'Beneficiados',
+                            backgroundColor: documentStyle.getPropertyValue('--blue-500'),
+                            borderColor: documentStyle.getPropertyValue('--blue-500'),
+                            data: formattedData.map(item => item["recien nacidos beneficiados"] || 0)
+                        },
+                        {
+                            label: 'Leche Distribuida (Litros)',
+                            backgroundColor: documentStyle.getPropertyValue('--pink-500'),
+                            borderColor: documentStyle.getPropertyValue('--pink-500'),
+                            data: formattedData.map(item => item["leche distribuida litros"] || 0)
+                        }
+                    ]
+                });
+
+                setChartOptions({
+                    indexAxis: 'y',
+                    maintainAspectRatio: false,
+                    aspectRatio: 0.8,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: documentStyle.getPropertyValue('--text-color')
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: documentStyle.getPropertyValue('--text-color-secondary'),
+                                font: {
+                                    weight: 500
+                                }
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: documentStyle.getPropertyValue('--text-color-secondary')
+                            },
+                            grid: {
+                                color: documentStyle.getPropertyValue('--surface-border'),
+                                drawBorder: false
+                            }
+                        }
+                    }
+                });
+
+                setMetricData([
+                    { label: 'Total Beneficiados', color: '#8884d8', value: totalBeneficiados, icon: 'pi pi-users' },
+                    { label: 'Leche Distribuida (L)', color: '#82ca9d', value: totalLecheLitros, icon: 'pi pi-drop' }
+                ]);
+
+            } catch (error) {
                 console.error('Error fetching data:', error);
-            });
+            }
+        };
+
+        fetchData();
     }, []);
 
     return (
-        <ResponsiveContainer width="100%" height={250}>
-            <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="recien nacidos beneficiados" fill="#8884d8" />
-                <Bar dataKey="leche distribuida litros" fill="#82ca9d" />
-            </BarChart>
-        </ResponsiveContainer>
+        <div>
+            <div className="card flex justify-content-center">
+                <MeterGroup values={metricData} />
+            </div>
+            <div className="card" style={{ maxWidth: '600px', margin: 'auto' }}>
+                <Chart type="bar" data={chartData} options={chartOptions} style={{ height: '400px' }} />
+            </div>
+        </div>
     );
 };
 

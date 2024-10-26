@@ -26,6 +26,8 @@ import ShowChat from './components/ChatBot/ShowChat';
 import ShowSubChat from './components/ChatBot/ShowSubChat';
 import ShowChatRespuestas from './components/ChatBot/ShowChatRespuestas';
 import ShowUsuario from './components/Formularios/ShowUsuario';
+import ChatBotExampleAS from './components/ChatBot/ChatBotExampleAs';
+import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
 function App() {
   return (
     <AuthProvider>
@@ -44,6 +46,8 @@ function App() {
             <Route path="/showservicioin" element={<PrivateRoute><ShowServicioIn /> </PrivateRoute>}/>
             <Route path="/showdonadoradetalle" element={<PrivateRoute><ShowDonadoraDetalle /></PrivateRoute>}/>
             <Route path="/resumen-por-servicio" element={<PrivateRoute><ResumenPorServicio /></PrivateRoute>}/>
+            <Route path="/resumenpasteurizacion" element={<PrivateRoute><ResumenPasteurizacion /></PrivateRoute>}/>
+            
             <Route path="/showstimulation" element={<PrivateRoute><ShowStimulation /></PrivateRoute>}/>
             <Route path="/resumen-estimulacion" element={<PrivateRoute><ResumenEstimulacion /></PrivateRoute>}/>
             <Route path="/showpasteurizacion" element={<PrivateRoute><ShowPasteurizacion /></PrivateRoute>}/>
@@ -53,6 +57,8 @@ function App() {
             <Route path="/chatbotexample" element={<PrivateRoute><ChatBotExample /></PrivateRoute>}/>
             <Route path="/showchat" element={<PrivateRoute><ShowChat /></PrivateRoute>}/>
             <Route path="/showsubchat" element={<PrivateRoute><ShowSubChat /></PrivateRoute>}/>
+            <Route path="/chatbotexampleas" element={<PrivateRoute><ChatBotExampleAS /></PrivateRoute>}/>
+            
             <Route path="/showchatrespuestas" element={<PrivateRoute><ShowChatRespuestas /></PrivateRoute>}/>
             
             

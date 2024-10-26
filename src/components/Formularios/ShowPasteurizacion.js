@@ -3,6 +3,9 @@ import axios from 'axios';
 import { Paginator } from 'primereact/paginator';
 import Swal from 'sweetalert2';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
+import { useNavigate } from 'react-router-dom';
+import { FaChartBar } from 'react-icons/fa';
+import { Button } from 'reactstrap';
 
 const url = "https://banco-leche-backend.onrender.com/api/trabajo_de_pasteurizaciones/";
 
@@ -38,7 +41,10 @@ class ShowPasteurizacion extends Component {
       page: 1,
       rows: 10, // Número de registros por página
   }
-
+  handleNavigate = () => {
+    // Usa la función navigate pasada como prop
+    this.props.navigate('/resumenpasteurizacion');
+  };
   peticionGet = () => {
     const { page, rows, mostrarTodos } = this.state;
     const params = mostrarTodos ? '' : '&mesActual=true';
@@ -138,11 +144,17 @@ class ShowPasteurizacion extends Component {
 
   render() {
     const { form, totalRecords, rows, page } = this.state;
+    const navigate = this.props.navigate; // Obtenemos la función navigate desde props
+
     return (
       <div className="container-fluid">
          <div className="d-flex justify-content-between align-items-center mb-3">
         <button className="btn btn-success" onClick={() => { this.setState({ form: {}, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Pasteurización</button>
         <br /><br />
+        <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
+          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
+          Mostrar Resumen por Servicio
+          </Button>
         </div>
 
         <div className="table-responsive">
@@ -290,4 +302,10 @@ class ShowPasteurizacion extends Component {
   }
 }
 
-export default ShowPasteurizacion;
+function ShowPasteurizacionWrapper() {
+  const navigate = useNavigate();
+  return <ShowPasteurizacion navigate={navigate} />;
+}
+
+
+export default ShowPasteurizacionWrapper;
