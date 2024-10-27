@@ -5,7 +5,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { FaHospital, FaRobot, FaComments, FaCommentAlt, FaPaperPlane, FaUsers, FaFemale, FaUserNurse, FaHospitalUser, FaUserMd, FaBaby, FaClipboard, FaChartLine, FaSignOutAlt, FaHeartbeat, FaFlask, FaWater, FaHandsHelping } from 'react-icons/fa';
 import './Navbar.css';
 import logo from '../Images/backgrounds/Logo_bancon.png';
-import ChatBotExampleAS from '../ChatBot/ChatBotExampleAS';
+
 
 
 const NavbarComponent = () => {
@@ -135,7 +135,7 @@ const NavbarComponent = () => {
           <Offcanvas.Body>
           
             {auth.token && <NavContent />}
-            <ChatBotExampleAS></ChatBotExampleAS>
+           
         
           </Offcanvas.Body>
         </Offcanvas>
