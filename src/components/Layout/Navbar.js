@@ -93,6 +93,7 @@ const NavbarComponent = () => {
       
     </>
     
+    
   );
 
   return (
@@ -122,7 +123,7 @@ const NavbarComponent = () => {
           {auth.token && <NavContent />}
           
         </Navbar.Collapse>
-        <ChatBotExampleAS></ChatBotExampleAS>
+       
         
         
         
