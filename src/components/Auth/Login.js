@@ -143,7 +143,7 @@ const Login = () => {
           </div>
           <button type="submit" className="btn-login">INGRESAR</button>
         </form>
-        <ChatBotExample></ChatBotExample>
+        <ChatBotExample />
       </div>
     </div>
   );

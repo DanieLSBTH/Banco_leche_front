@@ -2,6 +2,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import Grafica from './Grafica';
+import ChatBot from '../ChatBot/ChatBot';
 const Dashboard = () => {
   const { auth } = useContext(AuthContext);
 
@@ -9,6 +10,7 @@ const Dashboard = () => {
     <div>
       <h2>Dashboard</h2>
       <Grafica />
+      <ChatBot />
       {auth.user ? (
         <p>Bienvenido, {auth.user.nombre}!</p>
       ) : (
