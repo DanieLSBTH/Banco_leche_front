@@ -74,13 +74,13 @@ const ChatBot = () => {
           let generatePDFCallback;
 
           if (option === '1') {
-            apiUrl = `http://localhost:8080/api/donadora_detalle/resumen-por-servicio?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `https://banco-leche-backend.onrender.com/api/donadora_detalle/resumen-por-servicio?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFDonadoras;
           } else if (option === '2') {
-            apiUrl = `http://localhost:8080/api/estimulacion/resumen_estimulacion-rangoFecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `https://banco-leche-backend.onrender.com/api/estimulacion/resumen_estimulacion-rangoFecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFEstimulación;
           } else if (option === '3') {
-            apiUrl = `http://localhost:8080/api/solicitud_de_leches/resumen/por-servicio-y-fechas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `https://banco-leche-backend.onrender.com/api/solicitud_de_leches/resumen/por-servicio-y-fechas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFControlDespacho;
           }
 
