@@ -26,8 +26,8 @@ import ShowChat from './components/ChatBot/ShowChat';
 import ShowSubChat from './components/ChatBot/ShowSubChat';
 import ShowChatRespuestas from './components/ChatBot/ShowChatRespuestas';
 import ShowUsuario from './components/Formularios/ShowUsuario';
-import ChatBotExampleAS from './components/ChatBot/ChatBotExampleAs';
 import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
+import ChatBotExampleAS from './components/ChatBot/ChatBotExampleAS';
 function App() {
   return (
     <AuthProvider>
