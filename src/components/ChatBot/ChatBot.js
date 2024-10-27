@@ -8,7 +8,7 @@ import sendIcon from '../Images/backgrounds/send-icon.png';
 import closeIcon from '../Images/backgrounds/close-icon.png';
 import logo from '../Images/backgrounds/Logo_banco2.png';
 
-const ChatBotExampleAS = () => {
+const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { text: '¡Hola! Soy PediBot. ¿Cómo te llamas?', isBot: true }
@@ -74,13 +74,13 @@ const ChatBotExampleAS = () => {
           let generatePDFCallback;
 
           if (option === '1') {
-            apiUrl = `https://banco-leche-backend.onrender.com/api/donadora_detalle/resumen-por-servicio?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `http://localhost:8080/api/donadora_detalle/resumen-por-servicio?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFDonadoras;
           } else if (option === '2') {
-            apiUrl = `https://banco-leche-backend.onrender.com/resumen_estimulacion-rangoFecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `http://localhost:8080/api/estimulacion/resumen_estimulacion-rangoFecha?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFEstimulación;
           } else if (option === '3') {
-            apiUrl = `https://banco-leche-backend.onrender.com/api/solicitud_de_leches/resumen/por-servicio-y-fechas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+            apiUrl = `http://localhost:8080/api/solicitud_de_leches/resumen/por-servicio-y-fechas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
             generatePDFCallback = generatePDFControlDespacho;
           }
 
@@ -247,4 +247,4 @@ const getBase64ImageFromURL = (url) => {
   );
 };
 
-export default ChatBotExampleAS;
+export default ChatBot;

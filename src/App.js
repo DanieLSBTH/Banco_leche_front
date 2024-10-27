@@ -26,6 +26,7 @@ import ShowChat from './components/ChatBot/ShowChat';
 import ShowSubChat from './components/ChatBot/ShowSubChat';
 import ShowChatRespuestas from './components/ChatBot/ShowChatRespuestas';
 import ShowUsuario from './components/Formularios/ShowUsuario';
+import ChatBot from './components/ChatBot/ChatBot';
 import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
 
 function App() {
@@ -57,7 +58,7 @@ function App() {
             <Route path="/chatbotexample" element={<PrivateRoute><ChatBotExample /></PrivateRoute>}/>
             <Route path="/showchat" element={<PrivateRoute><ShowChat /></PrivateRoute>}/>
             <Route path="/showsubchat" element={<PrivateRoute><ShowSubChat /></PrivateRoute>}/>
-            
+            <Route path="/chatbot" element={<PrivateRoute><ChatBot/></PrivateRoute>}/>
             <Route path="/showchatrespuestas" element={<PrivateRoute><ShowChatRespuestas /></PrivateRoute>}/>
             
             
