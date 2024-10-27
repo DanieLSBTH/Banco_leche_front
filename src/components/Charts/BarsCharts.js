@@ -8,6 +8,22 @@ export default function BarsChart() {
     const [chartOptions, setChartOptions] = useState({});
     const [metricData, setMetricData] = useState([]);
 
+    // Mapeo de los nombres de los meses en inglés a español
+    const monthMap = {
+        January: 'Enero',
+        February: 'Febrero',
+        March: 'Marzo',
+        April: 'Abril',
+        May: 'Mayo',
+        June: 'Junio',
+        July: 'Julio',
+        August: 'Agosto',
+        September: 'Septiembre',
+        October: 'Octubre',
+        November: 'Noviembre',
+        December: 'Diciembre'
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -15,7 +31,9 @@ export default function BarsChart() {
                 const data = response.data;
 
                 const formattedData = data.map(item => ({
-                    mes: item.mes,
+                    mes: item.mes.replace(/(\w+)\s(\d+)/, (match, month, year) => {
+                        return `${monthMap[month]} ${year}`;  // Reemplaza el mes en inglés por español
+                    }),
                     totalEstimulaciones: parseInt(item.total_estimulaciones, 10),
                     totalConstantes: parseInt(item.total_constantes, 10),
                     totalNuevas: parseInt(item.total_nuevas, 10)
