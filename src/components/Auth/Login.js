@@ -1,26 +1,60 @@
-// src/components/Auth/Login.js
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaLock } from 'react-icons/fa'
-import { Card } from 'primereact/card';
-import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
+import { FaUser, FaLock } from 'react-icons/fa';
+import { Galleria } from 'primereact/galleria';
 import { Button } from 'primereact/button';
-import { Divider } from 'primereact/divider';
+import { Password } from 'primereact/password';
 import Swal from 'sweetalert2';
-import { useSpring, animated } from '@react-spring/web';
-import '../Css/Login.css'; // Archivo CSS personalizado
+import '../Css/Login.css';
 import ChatBotExample from '../ChatBot/ChatBotExample';
 import logo from '../Images/backgrounds/Logo_banco2.png';
+import fondo1 from '../Images/backgrounds/Fondo_banco-1.jpg';
+import fondo2 from '../Images/backgrounds/Fondo_banco-2.jpg';
+import fondo3 from '../Images/backgrounds/banco-de-leche.jpg';
+import fondo4 from '../Images/backgrounds/Fondo_banco-3.jpg';
+
+
 
 const Login = () => {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
+  const [images, setImages] = useState([]);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Array de imágenes para la galería
+    setImages([
+      {
+        itemImageSrc: fondo1,
+        thumbnailImageSrc: fondo1, // Puedes usar la misma imagen como thumbnail
+        alt: 'Banco de Leche 1'
+      },
+      {
+        itemImageSrc: fondo2,
+        thumbnailImageSrc: fondo1, // Puedes usar la misma imagen como thumbnail
+        alt: 'Banco de Leche 2'
+      },
+      {
+        itemImageSrc: fondo3,
+        thumbnailImageSrc: fondo1, // Puedes usar la misma imagen como thumbnail
+        alt: 'Banco de Leche 3'
+      },
+      
+      {
+        itemImageSrc: fondo4,
+        thumbnailImageSrc: fondo1, // Puedes usar la misma imagen como thumbnail
+        alt: 'Banco de Leche 4'
+      },
+      
+      
+      
+      // Agrega más imágenes según necesites
+    ]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,13 +73,52 @@ const Login = () => {
     }
   };
 
+  const itemTemplate = (item) => {
+    return (
+      <img 
+        src={item.itemImageSrc} 
+        alt={item.alt} 
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+      />
+    );
+  };
+
+  const responsiveOptions = [
+    {
+      breakpoint: '991px',
+      numVisible: 4
+    },
+    {
+      breakpoint: '767px',
+      numVisible: 3
+    },
+    {
+      breakpoint: '575px',
+      numVisible: 1
+    }
+  ];
+
   return (
     <div className="login-container">
+      <div className="gallery-background">
+        <Galleria 
+          value={images} 
+          responsiveOptions={responsiveOptions} 
+          numVisible={1}
+          circular 
+          autoPlay 
+          transitionInterval={3000}
+          showThumbnails={false}
+          showIndicators
+          item={itemTemplate}
+        />
+      </div>
+      
       <div className="login-box">
-      <div className="flex justify-center items-center h-screen">
+        <div className="flex justify-center items-center">
           <img src={logo} alt="Logo" className="custom-logo-size" />
         </div>
-      <h2>Iniciar Sesión</h2>
+        <h2>Iniciar Sesión</h2>
         {error && <div className="alert alert-danger">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="input-group">
@@ -70,7 +143,7 @@ const Login = () => {
           </div>
           <button type="submit" className="btn-login">INGRESAR</button>
         </form>
-        <ChatBotExample></ChatBotExample>
+        <ChatBotExample />
       </div>
     </div>
   );
