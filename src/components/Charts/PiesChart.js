@@ -8,6 +8,22 @@ export default function ResumenPorMesBarChart() {
     const [chartOptions, setChartOptions] = useState({});
     const [metricData, setMetricData] = useState([]);
 
+    // Mapeo de nombres de meses en inglés a español
+    const monthMap = {
+        January: 'Enero',
+        February: 'Febrero',
+        March: 'Marzo',
+        April: 'Abril',
+        May: 'Mayo',
+        June: 'Junio',
+        July: 'Julio',
+        August: 'Agosto',
+        September: 'Septiembre',
+        October: 'Octubre',
+        November: 'Noviembre',
+        December: 'Diciembre'
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -15,7 +31,9 @@ export default function ResumenPorMesBarChart() {
                 const data = response.data;
 
                 const formattedData = data.map(item => ({
-                    mes: `${item.mes} - ${item.servicio_tipo}`,
+                    mes: item.mes.replace(/(\w+)\s(\d+)/, (match, month, year) => {
+                        return `${monthMap[month]} - ${item.servicio_tipo}`;  // Reemplaza el mes en inglés por español y agrega el tipo de servicio
+                    }),
                     totalDonaciones: parseInt(item.total_donaciones, 10),
                     totalDonadoras: parseInt(item.total_donadoras, 10),
                     totalLitros: parseFloat(item.total_litros)
