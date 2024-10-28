@@ -112,4 +112,15 @@
   .btn-login:hover {
     background-color: #0056b3;
   }
+  .toggle-password {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    margin-left: 0.5rem;
+  }
+  
+  .toggle-password:hover {
+    color: #333;
+  }
   

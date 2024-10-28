@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import api from '../../services/api';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash  } from 'react-icons/fa';
 import { Galleria } from 'primereact/galleria';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
@@ -23,6 +23,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [images, setImages] = useState([]);
   const { login } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,6 +58,10 @@ const Login = () => {
     ]);
   }, []);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -132,18 +138,27 @@ const Login = () => {
             />
           </div>
           <div className="input-group">
-            <FaLock className="icon" />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
-              required
-            />
-          </div>
+  <FaLock className="icon" />
+  <input
+    type={showPassword ? 'text' : 'password'}
+    placeholder="Contraseña"
+    value={contrasena}
+    onChange={(e) => setContrasena(e.target.value)}
+    required
+  />
+  <button
+    type="button"
+    onClick={togglePasswordVisibility}
+    className="toggle-password"
+    aria-label="Mostrar u ocultar contraseña"
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </button>
+</div>
+
           <button type="submit" className="btn-login">INGRESAR</button>
         </form>
-        <ChatBotExample/>
+        <ChatBotExample></ChatBotExample>
       </div>
     </div>
   );
