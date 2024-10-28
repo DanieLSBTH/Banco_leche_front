@@ -90,7 +90,7 @@ const NavbarComponent = () => {
       <Button variant="outline-light" onClick={handleLogout} className="logout-btn">
         <FaSignOutAlt /> Cerrar Sesión
       </Button>
-      <ChatBot />      
+           
     </>
     
     

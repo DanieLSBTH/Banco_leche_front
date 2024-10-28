@@ -10,7 +10,7 @@ const Dashboard = () => {
     <div>
       <h2>Dashboard</h2>
       <Grafica />
-      
+      <ChatBot /> 
       {auth.user ? (
         <p>Bienvenido, {auth.user.nombre}!</p>
       ) : (
