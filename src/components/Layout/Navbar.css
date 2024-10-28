@@ -310,3 +310,141 @@
   }
   
   /* ... (otros estilos existentes) ... */
+  /* Animaciones para el logo y título */
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleInLogo {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Aplicar animaciones al logo */
+.navbar-logo {
+  animation: scaleInLogo 1.2s ease-out forwards;
+}
+
+.navbar-logo img {
+  max-height: 80px;
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover img {
+  transform: scale(1.05);
+}
+
+/* Animaciones para el título */
+.navbar-centered-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: 100%;
+  pointer-events: none;
+}
+
+.navbar-centered-title h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  animation: slideFromLeft 1s ease-out forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.navbar-centered-title h2 {
+  font-size: 1rem;
+  margin-top: 0.25rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  animation: slideFromRight 1s ease-out forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
+}
+
+/* Efecto hover suave para el título */
+.navbar-centered-title h1,
+.navbar-centered-title h2 {
+  transition: transform 0.3s ease;
+}
+
+.navbar:hover .navbar-centered-title h1 {
+  transform: translateY(-2px);
+}
+
+.navbar:hover .navbar-centered-title h2 {
+  transform: translateY(2px);
+}
+
+/* Mantener responsividad */
+@media (max-width: 991px) {
+  .navbar-centered-title {
+    position: static;
+    transform: none;
+    padding: 10px 0;
+  }
+
+  .navbar-centered-title h1 {
+    font-size: 1.2rem;
+  }
+
+  .navbar-centered-title h2 {
+    font-size: 0.9rem;
+  }
+
+  .navbar-logo {
+    padding-left: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar-centered-title h1 {
+    font-size: 1rem;
+  }
+
+  .navbar-centered-title h2 {
+    font-size: 0.8rem;
+  }
+}
