@@ -48,17 +48,54 @@ class ShowDonadoraDetalle extends Component {
     totalRecords: 0,
     page: 1,
     rows: 10, // Número de registros por página
+    searchValue: '', // Valor de búsqueda de donadora
+    filteredDonadoras: [], // Lista de donadoras filtradas
+    showSuggestions: false, // Nuevo estado para controlar la visibilidad de las sugerencias
+ 
 
     nuevaDonadora: {
       nombre: '',
       apellido: ''
     }
+    
   }
 
   componentDidMount() {
     this.peticionGet();
     this.cargarListasRelacionadas();
   }
+
+  cargarDonadoras = async () => {
+    try {
+      const response = await axios.get(urlDonadora);
+      this.setState({ donadoras: response.data.donadoras });
+    } catch (error) {
+      console.error("Error al cargar donadoras: ", error);
+    }
+  };
+
+  handleSearchChange = (e) => {
+    const searchValue = e.target.value;
+    this.setState({
+      searchValue,
+      showSuggestions: searchValue.length > 0, // Mostrar sugerencias solo si hay texto
+      filteredDonadoras: searchValue
+        ? this.state.donadoras.filter((donadora) =>
+            `${donadora.nombre} ${donadora.apellido}`.toLowerCase().includes(searchValue.toLowerCase())
+          )
+        : []
+    });
+  };
+
+  handleDonadoraSelect = (donadora) => {
+    this.setState((prevState) => ({
+      form: { ...prevState.form, id_donadora: donadora.id_donadora },
+      searchValue: `${donadora.nombre} ${donadora.apellido}`,
+      filteredDonadoras: [],
+      showSuggestions: false // Ocultar sugerencias después de seleccionar
+    }));
+  };
+
   handleNavigate = () => {
     // Usa la función navigate pasada como prop
     this.props.navigate('/resumen-por-servicio');
@@ -83,21 +120,23 @@ class ShowDonadoraDetalle extends Component {
     }
   };
 
- // Método modificado para soportar paginación
- peticionGet = () => {
-  const { page, rows, mostrarTodos } = this.state;
-  // Definir los parámetros dependiendo si se quiere ver todos los registros o solo los del mes actual
-  const params = mostrarTodos ? '' : '&mesActual=true';
-  axios.get(`${urlDonadoraDetalle}?page=${page}&pageSize=${rows}${params}`).then(response => {
-    this.setState({
-      donadoraDetalles: response.data.donadoraDetalles, // Asigna directamente los datos de donadoraDetalles
-      totalRecords: response.data.totalRecords // Asegúrate de que estás obteniendo el total de registros
+  peticionGet = () => {
+    const { page, rows, mostrarTodos } = this.state;
+    const params = mostrarTodos ? '' : '&mesActual=true';
+    axios.get(`${urlDonadoraDetalle}?page=${page}&pageSize=${rows}${params}`).then(response => {
+      this.setState({
+        donadoraDetalles: response.data.donadoraDetalles,
+        totalRecords: response.data.totalRecords,
+        searchValue: '', // Limpiar el campo de búsqueda
+        filteredDonadoras: [], // Limpiar las sugerencias
+        showSuggestions: false // Ocultar las sugerencias
+      });
+    }).catch(error => {
+      console.error('Error fetching data:', error);
+      Swal.fire('Error', 'No se pudo cargar la lista de donadoraDetalles', 'error');
     });
-  }).catch(error => {
-    console.error('Error fetching data:', error);
-    Swal.fire('Error', 'No se pudo cargar la lista de donadoraDetalles', 'error');
-  });
-}
+  }
+
 onPageChange = (event) => {
   this.setState({ page: event.page + 1 }, () => {
     this.peticionGet(); // Actualiza los datos cuando se cambia de página
@@ -297,13 +336,21 @@ onPageChange = (event) => {
       Swal.fire('Error', 'Error al crear la donadora', 'error');
     }
   }
+  handleGuardar = () => {
+    // Lógica para guardar, después limpia el campo de búsqueda
+    this.peticionPost();
+    this.setState({ searchValue: '', filteredDonadoras: [] }); // Limpia el campo y las sugerencias
+  };
 
   render() {
-    const { form, mostrarTodos, donadoras, modalInsertarDonadora,donadoraDetalles,totalRecords, rows, page  } = this.state;
+    const { form,searchValue, filteredDonadoras, showSuggestions, mostrarTodos, donadoras, modalInsertarDonadora,donadoraDetalles,totalRecords, rows, page  } = this.state;
     const navigate = this.props.navigate; // Obtenemos la función navigate desde props
 
     return (
       <div className="container-fluid">
+         {/* Campo de búsqueda */}
+      
+
         <div className="d-flex justify-content-between align-items-center mb-3">
         <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Registro</button>
         <br /><br />
@@ -382,6 +429,31 @@ onPageChange = (event) => {
             <label htmlFor="no_frasco">No. Frasco</label> {/* Nuevo campo no_frasco */}
               <input className="form-control" type="text" name="no_frasco" id="no_frasco" onChange={this.handleChange} value={form ? form.no_frasco : ''} />
               <br />
+              <div className="form-group">
+      <label htmlFor="donadora-search">Buscar Donadora:</label>
+      <input
+        type="text"
+        id="donadora-search"
+        className="form-control"
+        placeholder="Nombre de la donadora"
+        value={searchValue}
+        onChange={this.handleSearchChange}
+      />
+          {/* Sugerencias de donadoras */}
+          {this.state.showSuggestions && filteredDonadoras.length > 0 && (
+        <ul className="list-group">
+          {filteredDonadoras.map((donadora) => (
+            <li
+              key={donadora.id_donadora}
+              className="list-group-item list-group-item-action"
+              onClick={() => this.handleDonadoraSelect(donadora)}
+            >
+              {donadora.nombre} {donadora.apellido}
+            </li>
+          ))}
+            </ul>
+          )}
+        </div>
               <label htmlFor="id_donadora">Donadora</label>
               <div className="input-group">
                 <select className="form-control" name="id_donadora" onChange={this.handleChange} value={form ? form.id_donadora : ''}>
