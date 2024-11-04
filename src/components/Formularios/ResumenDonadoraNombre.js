@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, Table, Container } from 'reactstrap';
+import { Button, Table, Container, Row, Col, Card, CardBody } from 'reactstrap';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
@@ -60,180 +60,189 @@ const ResumenDonadoraNombre = () => {
     handleSearch(donadora.id_donadora);
   };
 
+
   return (
-    <Container>
-      <h3 className="my-4">Resumen de Donaciones por Donadora</h3>
-      
-      <div className="mb-4 text-center position-relative">
-        <div className="d-flex justify-content-center align-items-center">
-          <div className="position-relative" style={{ minWidth: '300px' }}>
-            <input
-              type="text"
-              placeholder="Ingrese el nombre de la donadora"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setShowSuggestions(true);
-              }}
-              className="form-control"
-              onFocus={() => setShowSuggestions(true)}
-            />
-            
-            {/* Lista de sugerencias */}
-            {showSuggestions && suggestions.length > 0 && (
-              <div 
-                className="position-absolute w-100 mt-1 shadow-sm bg-white rounded border"
-                style={{ 
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                  zIndex: 1000
-                }}
-              >
-                {suggestions.map((donadora) => (
-                  <div
-                    key={donadora.id}
-                    className="p-2 border-bottom cursor-pointer"
-                    onClick={() => handleDonadoraSelect(donadora)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {donadora.nombre} {donadora.apellido}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mostrar resumen de donaciones */}
-      {resumen && (
-        <>
-          <div className="mb-4">
-            <h5>Estadísticas Generales</h5>
-            <Table bordered>
-              <thead>
-                <tr>
-                  <th>Total Donadoras Encontradas</th>
-                  <th>Total Donaciones</th>
-                  <th>Promedio Donaciones por Donadora</th>
-                  <th>Total Onzas Recolectadas</th>
-                  <th>Total Litros Recolectados</th>
-                  <th>Servicios Más Frecuentes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{resumen.estadisticas_generales.total_donadoras_encontradas}</td>
-                  <td>{resumen.estadisticas_generales.total_donaciones}</td>
-                  <td>{resumen.estadisticas_generales.promedio_donaciones_por_donadora}</td>
-                  <td>{resumen.estadisticas_generales.total_onzas_recolectadas}</td>
-                  <td>{resumen.estadisticas_generales.total_litros_recolectados}</td>
-                  <td>
-                    {Object.entries(resumen.estadisticas_generales.servicios_mas_frecuentes).map(
-                      ([servicio, frecuencia], index) => (
-                        <div key={index}>
-                          {servicio}: {frecuencia}
-                        </div>
-                      )
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-
-          <div className="mb-4">
-            <h5>Detalles de Donadoras Encontradas</h5>
-            {resumen.resultados.map((donadora, index) => (
-              <div key={index} className="mb-4">
-                <h6>Información Personal</h6>
-                <Table bordered>
-                  <tbody>
-                    <tr>
-                      <th>ID</th>
-                      <td>{donadora.informacion_personal.id}</td>
-                    </tr>
-                    <tr>
-                      <th>Nombre</th>
-                      <td>{donadora.informacion_personal.nombre} </td>
-                    </tr>
-                    <tr>
-                      <th>Apellido</th>
-                      <td>{donadora.informacion_personal.apellido}</td>
-                    </tr>
-                    <tr>
-                      <th>Total Donaciones</th>
-                      <td>{donadora.resumen.total_donaciones}</td>
-                    </tr>
-                    <tr>
-                      <th>Primera Donación</th>
-                      <td>{donadora.resumen.primera_donacion}</td>
-                    </tr>
-                    <tr>
-                      <th>Última Donación</th>
-                      <td>{donadora.resumen.ultima_donacion}</td>
-                    </tr>
-                    <tr>
-                      <th>Donacion Nuevas</th>
-                      <td>{donadora.resumen.total_nuevas}</td>
-                    </tr>
-                    <tr>
-                      <th>Donaciones Constantes</th>
-                      <td>{donadora.resumen.total_constantes}</td>
-                    </tr>
-                    <tr>
-                      <th>Servicios Visitados</th>
-                      <td>{donadora.resumen.servicios_visitados.join(', ')}</td>
-                    </tr>
-                    <tr>
-                      <th>Personal que Atendió</th>
-                      <td>{donadora.resumen.personal_atendio.join(', ')}</td>
-                    </tr>
-                    <tr>
-                      <th>Días Desde Última Donación</th>
-                      <td>{donadora.resumen.dias_desde_ultima_donacion}</td>
-                    </tr>
-                    <tr>
-                      <th>Promedio Onzas por Donación</th>
-                      <td>{donadora.resumen.promedio_onzas_por_donacion}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-
-                <h6>Detalles de Donaciones</h6>
-                <Table bordered>
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>No. Frasco</th>
-                      <th>Onzas</th>
-                      <th>Litros</th>
-                      <th>Servicio</th>
-                      <th>Tipo de Servicio</th>
-                      <th>Personal que Atendió</th>
-                      <th>Tipo de Donación</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {donadora.donaciones.map((donacion, dIndex) => (
-                      <tr key={dIndex}>
-                        <td>{donacion.fecha}</td>
-                        <td>{donacion.no_frasco}</td>
-                        <td>{donacion.onzas}</td>
-                        <td>{donacion.litros}</td>
-                        <td>{donacion.servicio}</td>
-                        <td>{donacion.tipo_servicio}</td>
-                        <td>{donacion.personal_atendio}</td>
-                        <td>{donacion.tipo.nueva ? 'Nueva' : 'Constante'}</td>
-                      </tr>
+    <Container fluid className="px-3 px-md-4">
+      <Row className="justify-content-center my-4">
+        <Col xs={12} lg={10}>
+          <h3 className="text-center mb-4">Resumen de Donaciones por Donadora</h3>
+          
+          {/* Barra de búsqueda responsive */}
+          <Row className="justify-content-center mb-4">
+            <Col xs={12} sm={8} md={6}>
+              <div className="position-relative">
+                <input
+                  type="text"
+                  placeholder="Ingrese el nombre de la donadora"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  className="form-control"
+                  onFocus={() => setShowSuggestions(true)}
+                />
+                
+                {/* Lista de sugerencias con scroll en móviles */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="position-absolute w-100 mt-1 shadow-sm bg-white rounded border"
+                       style={{ 
+                         maxHeight: '200px',
+                         overflowY: 'auto',
+                         zIndex: 1000,
+                         top: '100%'
+                       }}>
+                    {suggestions.map((donadora) => (
+                      <div
+                        key={donadora.id}
+                        className="p-2 border-bottom hover-bg-light"
+                        onClick={() => handleDonadoraSelect(donadora)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {donadora.nombre} {donadora.apellido}
+                      </div>
                     ))}
-                  </tbody>
-                </Table>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            </Col>
+          </Row>
+
+          {/* Contenido del resumen */}
+          {resumen && (
+            <div className="mb-4">
+              <Card className="mb-4">
+                <CardBody>
+                  <h5 className="card-title">Estadísticas Generales</h5>
+                  <div className="table-responsive">
+                    <Table bordered hover className="mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th>Total Donadoras</th>
+                          <th>Total Donaciones</th>
+                          <th>Promedio por Donadora</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{resumen.estadisticas_generales.total_donadoras_encontradas}</td>
+                          <td>{resumen.estadisticas_generales.total_donaciones}</td>
+                          <td>{resumen.estadisticas_generales.promedio_donaciones_por_donadora}</td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </div>
+                  
+                  <div className="table-responsive mt-3">
+                    <Table bordered hover className="mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th>Total Onzas</th>
+                          <th>Total Litros</th>
+                          <th>Servicios Frecuentes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{resumen.estadisticas_generales.total_onzas_recolectadas}</td>
+                          <td>{resumen.estadisticas_generales.total_litros_recolectados}</td>
+                          <td>
+                            {Object.entries(resumen.estadisticas_generales.servicios_mas_frecuentes)
+                              .map(([servicio, frecuencia], index) => (
+                                <div key={index} className="small">
+                                  {servicio}: {frecuencia}
+                                </div>
+                              ))}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </div>
+                </CardBody>
+              </Card>
+
+              {/* Detalles de donadoras */}
+              {resumen.resultados.map((donadora, index) => (
+                <Card key={index} className="mb-4">
+                  <CardBody>
+                    <h5 className="card-title">Información Personal</h5>
+                    <Row>
+                      <Col xs={12} md={6}>
+                        <div className="table-responsive">
+                          <Table bordered hover className="mb-3">
+                            <tbody>
+                              <tr>
+                                <th className="bg-light" style={{width: '40%'}}>ID</th>
+                                <td>{donadora.informacion_personal.id}</td>
+                              </tr>
+                              <tr>
+                                <th className="bg-light">Nombre</th>
+                                <td>{donadora.informacion_personal.nombre}</td>
+                              </tr>
+                              <tr>
+                                <th className="bg-light">Apellido</th>
+                                <td>{donadora.informacion_personal.apellido}</td>
+                              </tr>
+                            </tbody>
+                          </Table>
+                        </div>
+                      </Col>
+                      <Col xs={12} md={6}>
+                        <div className="table-responsive">
+                          <Table bordered hover className="mb-3">
+                            <tbody>
+                              <tr>
+                                <th className="bg-light" style={{width: '40%'}}>Total Donaciones</th>
+                                <td>{donadora.resumen.total_donaciones}</td>
+                              </tr>
+                              <tr>
+                                <th className="bg-light">Donaciones Nuevas</th>
+                                <td>{donadora.resumen.total_nuevas}</td>
+                              </tr>
+                              <tr>
+                                <th className="bg-light">Donaciones Constantes</th>
+                                <td>{donadora.resumen.total_constantes}</td>
+                              </tr>
+                            </tbody>
+                          </Table>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    <h6 className="mt-4">Detalles de Donaciones</h6>
+                    <div className="table-responsive">
+                      <Table bordered hover size="sm">
+                        <thead className="bg-light">
+                          <tr>
+                            <th>Fecha</th>
+                            <th>No. Frasco</th>
+                            <th>Onzas</th>
+                            <th>Servicio</th>
+                            <th>Personal</th>
+                            <th>Tipo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {donadora.donaciones.map((donacion, dIndex) => (
+                            <tr key={dIndex}>
+                              <td>{donacion.fecha}</td>
+                              <td>{donacion.no_frasco}</td>
+                              <td>{donacion.onzas}</td>
+                              <td>{donacion.servicio}</td>
+                              <td>{donacion.personal_atendio}</td>
+                              <td>{donacion.tipo.nueva ? 'Nueva' : 'Constante'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Col>
+      </Row>
     </Container>
   );
 };
