@@ -100,7 +100,10 @@ class ShowDonadoraDetalle extends Component {
     // Usa la función navigate pasada como prop
     this.props.navigate('/resumen-por-servicio');
   };
-
+  handleNavigate2 = () => {
+    // Usa la función navigate pasada como prop
+    this.props.navigate('/resumendonadoranombre');
+  };
   cargarListasRelacionadas = async () => {
     try {
       const [personalRes, servicioExRes, servicioInRes, donadoraRes] = await Promise.all([
@@ -367,6 +370,10 @@ onPageChange = (event) => {
           <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen por Servicio
+          </Button>
+          <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
+          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
+          Mostrar Resumen por nombre
           </Button>
         </div>
         </div>

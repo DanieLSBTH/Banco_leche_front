@@ -43,9 +43,14 @@ const NavbarComponent = () => {
         <Link className="nav-link" to="/showusuario" onClick={handleClose}>
           <FaUserNurse /> <span>Usuario</span>
         </Link>
-        <Link className="nav-link" to="/showstimulation" onClick={handleClose}>
-          <FaHeartbeat /> <span>Estimulacion</span>
+        <NavDropdown title={<><FaHeartbeat /> <span>Estimulación</span></>} id="donadoras-dropdown">
+        <Link className="dropdown-item" to="/showestimulacionpersonas" onClick={handleClose}>
+          <FaHeartbeat /> <span>Estimulacion-personas</span>
         </Link>
+        <Link className="dropdown-item" to="/showstimulation" onClick={handleClose}>
+          <FaHeartbeat /> <span>Detalle_estimulacion</span>
+        </Link>
+        </NavDropdown>
         <NavDropdown title={<><FaUsers /> <span>Donadoras</span></>} id="donadoras-dropdown">
           <Link className="dropdown-item" to="/showdonadoradetalle" onClick={handleClose}>
             <FaBaby /> Donadora Detalle

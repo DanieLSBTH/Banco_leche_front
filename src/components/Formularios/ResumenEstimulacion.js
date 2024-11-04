@@ -10,21 +10,20 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import logo from '../Images/backgrounds/Logo_banco2.png'; // Importar el logo
+import logo from '../Images/backgrounds/Logo_banco2.png';
 
-// Registrar componentes de Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const ResumenEstimulacion = () => {
   const [fechaInicio, setFechaInicio] = useState(null);
   const [fechaFin, setFechaFin] = useState(null);
-  const [resumen, setResumen] = useState([]);
+  const [resumen, setResumen] = useState(null);
 
   const handleFiltrar = async () => {
     if (fechaInicio && fechaFin) {
       try {
         const response = await axios.get(
-          `https://banco-leche-backend.onrender.com/api/estimulacion/resumen_estimulacion-rangoFecha?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
+          `http://localhost:8080/api/estimulacion/estimulacion-resumen?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
         );
         setResumen(response.data);
       } catch (error) {
@@ -43,93 +42,73 @@ const ResumenEstimulacion = () => {
     }
   };
 
-  // Función para generar el PDF
   const handlePrint = async () => {
     const doc = new jsPDF();
 
-    // Añadir logo
     const imgLogo = new Image();
     imgLogo.src = logo;
-    doc.addImage(imgLogo, 'PNG', 10, 10, 30, 30); // Posición y tamaño del logo
+    doc.addImage(imgLogo, 'PNG', 10, 10, 30, 30);
 
-    // Agregar el título con las fechas
     const fechaInicioFormatted = fechaInicio ? fechaInicio.toLocaleDateString() : 'N/A';
     const fechaFinFormatted = fechaFin ? fechaFin.toLocaleDateString() : 'N/A';
+    doc.setFontSize(12);
+    doc.text('Dr. Miguel Angel Soto Galindo',75,20);
+    doc.text('Coordinador Banco de Leche Humana',69,25);
+    doc.text('Jefe Departamento de Pediatría ',75,30);
     doc.setFontSize(14);
-    doc.text(`Resumen de Estimulación de ${fechaInicioFormatted} a ${fechaFinFormatted}`, 50, 20);
+    doc.text(`Resumen de Estimulación de ${fechaInicioFormatted} a ${fechaFinFormatted}`, 50, 43);
 
-    // Añadir tabla con jsPDF autoTable
-    const tableData = resumen.map((mes) => [
-      mes.mes,
-      mes.total_estimulaciones,
-      mes.total_constantes,
-      mes.total_nuevas,
+    doc.autoTable({
+      head: [['Total Estimulaciones', 'Total Nuevas', 'Total Constantes', 'Total Personas']],
+      body: [[resumen.totalEstimulaciones, resumen.totalNuevas, resumen.totalConstantes, resumen.totalPersonas]],
+      startY: 45,
+    });
+
+    const tableData = resumen.totalPorServicio.map((servicio) => [
+      servicio.servicio_ins.servicio,
+      servicio.total,
     ]);
 
     doc.autoTable({
-      head: [['Mes', 'Total Estimulaciones', 'Total Constantes', 'Total Nuevas']],
+      head: [['Servicio', 'Total']],
       body: tableData,
-      margin: { top: 50 },
+      margin: { top: 60 },
     });
 
-    // Verificar si la gráfica cabe debajo de la tabla
-    const pageHeight = doc.internal.pageSize.height;
-    const yPosition = doc.lastAutoTable.finalY + 10;
+    const chart = document.getElementById('graficoEstimulacion');
+    const canvasGrafica = await html2canvas(chart);
+    const imgGrafica = canvasGrafica.toDataURL('image/png');
+    doc.addImage(imgGrafica, 'PNG', 10, doc.lastAutoTable.finalY + 10, 190, 100);
 
-    if (yPosition + 100 <= pageHeight) {
-      // Captura la gráfica como imagen y la inserta debajo de la tabla
-      const chart = document.getElementById('graficoEstimulacion');
-      const canvasGrafica = await html2canvas(chart);
-      const imgGrafica = canvasGrafica.toDataURL('image/png');
-      doc.addImage(imgGrafica, 'PNG', 10, yPosition, 190, 100);
-    } else {
-      // Si no cabe, crear una nueva página para la gráfica
-      doc.addPage();
-      const chart = document.getElementById('graficoEstimulacion');
-      const canvasGrafica = await html2canvas(chart);
-      const imgGrafica = canvasGrafica.toDataURL('image/png');
-      doc.addImage(imgGrafica, 'PNG', 10, 10, 190, 100);
-    }
-
-    // Pie de página
-    doc.setFontSize(12);
-    doc.text('Dr. Miguel Angel Soto Galindo', 10, pageHeight - 20);
-    doc.text('Jefe Departamento de Pediatría - Coordinador Banco de Leche Humana', 10, pageHeight - 10);
-
-    // Descarga el PDF
+    
     doc.save('ResumenEstimulacion.pdf');
   };
 
-  // Datos para la gráfica
-  const chartData = {
-    labels: resumen.map((mes) => mes.mes),
-    datasets: [
-      {
-        label: 'Total Estimulaciones',
-        data: resumen.map((mes) => mes.total_estimulaciones),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      },
-      {
-        label: 'Total Constantes',
-        data: resumen.map((mes) => mes.total_constantes),
-        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-      },
-      {
-        label: 'Total Nuevas',
-        data: resumen.map((mes) => mes.total_nuevas),
-        backgroundColor: 'rgba(255, 159, 64, 0.6)',
-      },
-    ],
-  };
+  const chartData = resumen
+    ? {
+        labels: resumen.totalPorServicio.map((servicio) => servicio.servicio_ins.servicio),
+        datasets: [
+          {
+            label: 'Total por Servicio',
+            data: resumen.totalPorServicio.map((servicio) => servicio.total),
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          },
+        ],
+      }
+    : { labels: [], datasets: [] };
 
-   // Configuración del calendario en español
-   addLocale('es', {
+  addLocale('es', {
     firstDayOfWeek: 1,
     dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
     dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
-    monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-    monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+    monthNames: [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ],
+    monthNamesShort: [
+      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+    ],
     today: 'Hoy',
     clear: 'Limpiar',
   });
@@ -170,32 +149,52 @@ const ResumenEstimulacion = () => {
         </Button>
       </div>
 
+      {resumen && (
+        <div className="mb-4">
+          <h5>Totales Generales</h5>
+          <Table bordered>
+            <thead>
+              <tr>
+                <th>Total Estimulaciones</th>
+                <th>Total Nuevas</th>
+                <th>Total Constantes</th>
+                <th>Total Personas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{resumen.totalEstimulaciones}</td>
+                <td>{resumen.totalNuevas}</td>
+                <td>{resumen.totalConstantes}</td>
+                <td>{resumen.totalPersonas}</td>
+              </tr>
+            </tbody>
+          </Table>
+        </div>
+      )}
+
       <Button color="secondary" onClick={handlePrint}>
         <FaPrint className="me-2" /> Imprimir Resumen
       </Button>
 
-      <Table striped responsive id="tablaEstimulacion">
+      <Table striped responsive className="mt-4">
         <thead>
           <tr>
-            <th>Mes</th>
-            <th>Total Estimulaciones</th>
-            <th>Total Constantes</th>
-            <th>Total Nuevas</th>
+            <th>Servicio</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          {resumen.length > 0 ? (
-            resumen.map((mes, index) => (
+          {resumen && resumen.totalPorServicio.length > 0 ? (
+            resumen.totalPorServicio.map((servicio, index) => (
               <tr key={index}>
-                <td>{mes.mes}</td>
-                <td>{mes.total_estimulaciones}</td>
-                <td>{mes.total_constantes}</td>
-                <td>{mes.total_nuevas}</td>
+                <td>{servicio.servicio_ins.servicio}</td>
+                <td>{servicio.total}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="4" className="text-center">
+              <td colSpan="2" className="text-center">
                 No se encontraron resultados.
               </td>
             </tr>
@@ -203,9 +202,8 @@ const ResumenEstimulacion = () => {
         </tbody>
       </Table>
 
-      {/* Gráfico de barras debajo de la tabla */}
       <div className="my-5" id="graficoEstimulacion">
-        <h4>Visualización de Datos</h4>
+        <h4>Visualización de Datos por Servicio</h4>
         <Bar data={chartData} options={{ responsive: true }} />
       </div>
     </Container>
