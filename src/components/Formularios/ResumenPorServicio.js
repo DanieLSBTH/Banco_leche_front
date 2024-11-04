@@ -27,7 +27,7 @@ const ResumenPorServicio = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/donadora_detalle/stats/?fecha_inicio=${fechaInicio.toISOString().split('T')[0]}&fecha_fin=${fechaFin.toISOString().split('T')[0]}`
+          `https://banco-leche-backend.onrender.com/api/donadora_detalle/stats/?fecha_inicio=${fechaInicio.toISOString().split('T')[0]}&fecha_fin=${fechaFin.toISOString().split('T')[0]}`
         );
         
         const { data } = response;
