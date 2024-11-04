@@ -20,7 +20,7 @@ const ResumenDonadoraNombre = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.get(`https://banco-leche-backend.onrender.com/api/donadora?nombre=${value}`);
+      const response = await axios.get(`http://localhost:8080/api/donadora?nombre=${value}`);
       setSuggestions(response.data.donadoras);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -41,7 +41,7 @@ const ResumenDonadoraNombre = () => {
   const handleSearch = async (id_donadora) => {
     if (id_donadora) {
       try {
-        const response = await axios.get(`https://banco-leche-backend.onrender.com/api/donadora_detalle/buscar/id_donadora?id_donadora=${id_donadora}`);
+        const response = await axios.get(`http://localhost:8080/api/donadora_detalle/buscar/id_donadora?id_donadora=${id_donadora}`);
         setResumen(response.data);
         setShowSuggestions(false);
       } catch (error) {

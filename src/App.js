@@ -30,7 +30,7 @@ import ChatBot from './components/ChatBot/ChatBot';
 import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
 import ShowEstimulacionPersonas from './components/Formularios/ShowEstimulacionPersonas';
 import ResumenEstimulacionNombre from './components/Formularios/ResumenEstimulacionNombre';
-import ResumenDonadoraNombre from'./components/Formularios/ResumenDonadoraNombre';
+import ResumenDonadoraNombre from './components/Formularios/ResumenDonadoraNombre';
 
 function App() {
   return (
@@ -49,6 +49,8 @@ function App() {
             <Route path="/showservicioex" element={<PrivateRoute><ShowServicioEx /> </PrivateRoute>}/>
             <Route path="/showservicioin" element={<PrivateRoute><ShowServicioIn /> </PrivateRoute>}/>
             <Route path="/showdonadoradetalle" element={<PrivateRoute><ShowDonadoraDetalle /></PrivateRoute>}/>
+            <Route path="/resumendonadoranombre" element={<PrivateRoute><ResumenDonadoraNombre /></PrivateRoute>}/>
+            
             <Route path="/resumen-por-servicio" element={<PrivateRoute><ResumenPorServicio /></PrivateRoute>}/>
             <Route path="/resumenpasteurizacion" element={<PrivateRoute><ResumenPasteurizacion /></PrivateRoute>}/>
             
