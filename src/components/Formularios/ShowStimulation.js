@@ -7,9 +7,9 @@ import { Paginator } from 'primereact/paginator';
 import { FaChartBar } from 'react-icons/fa';
 import { Button } from 'reactstrap';
 import InsertarPersonaModal from './InsertarPersonaModal';
-const url = "http://localhost:8080/api/estimulacion/";
-const personalUrl = 'http://localhost:8080/api/personal_estimulacion/';
-const servicioUrl = 'http://localhost:8080/api/servicio_in/';
+const url = "https://banco-leche-backend.onrender.com/api/estimulacion/";
+const personalUrl = 'https://banco-leche-backend.onrender.com/api/personal_estimulacion/';
+const servicioUrl = 'https://banco-leche-backend.onrender.com/api/servicio_in/';
 
 class ShowStimulation extends Component {
   constructor(props) {
@@ -58,7 +58,7 @@ class ShowStimulation extends Component {
     );
   };
   obtenerPersonal = async () => {
-    const response = await axios.get('http://localhost:8080/api/personal_estimulacion/');
+    const response = await axios.get('https://banco-leche-backend.onrender.com/api/personal_estimulacion/');
     this.setState({ personal: response.map });
   };
 

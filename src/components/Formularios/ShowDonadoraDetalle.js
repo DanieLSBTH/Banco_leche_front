@@ -408,8 +408,8 @@ onPageChange = (event) => {
                   <td>{detalle.litros}</td>
                   <td>{detalle.servicio_exes ? detalle.servicio_exes.servicio : ''}</td>
                   <td>{detalle.servicio_ins ? detalle.servicio_ins.servicio : ''}</td> {/* Mostrar el servicio intrahospitalario */}
-                  <td><input type="checkbox" checked={detalle.constante} disabled /></td>
-                  <td><input type="checkbox" checked={detalle.nueva} disabled /></td>
+                  <td><input type="checkbox" checked={detalle.constante} disabledstyle={{ accentColor: "blue" }}  /></td>
+                  <td><input type="checkbox" checked={detalle.nueva} disabledstyle={{ accentColor: "blue" }} /></td>
                   <td>{detalle.personals ? detalle.personals.nombre : ''}</td>
                   <td>
                     <button className="btn btn-primary" onClick={() => { this.seleccionarDonadoraDetalle(detalle); this.modalInsertar() }}>Editar</button>
@@ -505,26 +505,30 @@ onPageChange = (event) => {
                 ))}
               </select>
               <br />
-              <label htmlFor="constante">Constante</label>
+              <div className="form-check mb-3">
               <input
-                className="form-control"
+                className="form-check-input"
                 type="checkbox"
                 name="constante"
                 id="constante"
                 onChange={this.handleChange}
                 checked={form ? form.constante : false}
               />
-              <br />
-              <label htmlFor="nueva">Nueva</label>
+              <label className="form-check-label" htmlFor="constante">Constante</label>
+              </div>
+
+              <div className="form-check mb-3">
               <input
-                className="form-control"
+                className="form-check-input"
                 type="checkbox"
                 name="nueva"
                 id="nueva"
                 onChange={this.handleChange}
                 checked={form ? form.nueva : false}
               />
-              <br />
+              <label className="form-check-label" htmlFor="nueva">Nueva</label>
+              </div>
+             
               <label htmlFor="id_personal">Personal</label>
               <select className="form-control" name="id_personal" onChange={this.handleChange} value={form ? form.id_personal : ''}>
                 <option value="">Seleccione personal</option>

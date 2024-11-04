@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { Paginator } from 'primereact/paginator';
 
-const url = "http://localhost:8080/api/personal_estimulacion/";
+const url = "https://banco-leche-backend.onrender.com/api/personal_estimulacion/";
 
 class ShowEstimulacionPersonas extends Component {
   state = {

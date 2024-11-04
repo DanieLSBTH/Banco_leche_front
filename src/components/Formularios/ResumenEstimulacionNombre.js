@@ -20,7 +20,7 @@ const ResumenEstimulacionNombre = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/personal_estimulacion?nombre=${value}`);
+      const response = await axios.get(`https://banco-leche-backend.onrender.com/api/personal_estimulacion?nombre=${value}`);
       setSuggestions(response.data.personal_estimulaciones);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -41,7 +41,7 @@ const ResumenEstimulacionNombre = () => {
   const handleSearch = async (id_personal_estimulacion) => {
     if (id_personal_estimulacion) {
       try {
-        const response = await axios.get(`http://localhost:8080/api/estimulacion/buscar/id_personal_estimulacion?id_personal_estimulacion=${id_personal_estimulacion}`);
+        const response = await axios.get(`https://banco-leche-backend.onrender.com/api/estimulacion/buscar/id_personal_estimulacion?id_personal_estimulacion=${id_personal_estimulacion}`);
         setResumen(response.data);
         setShowSuggestions(false);
       } catch (error) {

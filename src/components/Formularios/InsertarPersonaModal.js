@@ -15,7 +15,7 @@ const InsertarPersonaModal = ({ isOpen, toggle, onPersonaInsertada }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/personal_estimulacion/', {
+      const response = await axios.post('https://banco-leche-backend.onrender.com/api/personal_estimulacion/', {
         nombre,
         apellido,
       });

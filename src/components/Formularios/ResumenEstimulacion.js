@@ -23,7 +23,7 @@ const ResumenEstimulacion = () => {
     if (fechaInicio && fechaFin) {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/estimulacion/estimulacion-resumen?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
+          `https://banco-leche-backend.onrender.com/api/estimulacion/estimulacion-resumen?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
         );
         setResumen(response.data);
       } catch (error) {
