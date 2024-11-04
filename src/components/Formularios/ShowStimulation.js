@@ -290,6 +290,7 @@ modalInsertar = () => {
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen estimulacion
           </Button>
+          <br />
           <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen por nombre

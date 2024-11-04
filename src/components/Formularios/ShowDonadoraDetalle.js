@@ -371,6 +371,7 @@ onPageChange = (event) => {
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen por Servicio
           </Button>
+          <br />
           <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen por nombre
