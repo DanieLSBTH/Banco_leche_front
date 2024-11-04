@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Button, Table, Container } from 'reactstrap';
+import { Button, Table, Container, Row, Col, Card, CardBody } from 'reactstrap';
 import { FaFilter, FaPrint } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { Calendar } from 'primereact/calendar';
@@ -11,35 +11,38 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import logo from '../Images/backgrounds/Logo_banco2.png';
-
-// Registrar componentes de Chart.js
+import logo2 from '../Images/backgrounds/logo_msp.png';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const ResumenPorServicio = () => {
   const [fechaInicio, setFechaInicio] = useState(null);
   const [fechaFin, setFechaFin] = useState(null);
-  const [resumen, setResumen] = useState([]);
-  const [totales, setTotales] = useState(null);
+  const [resumenExtra, setResumenExtra] = useState([]);
+  const [resumenIntra, setResumenIntra] = useState([]);
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFiltrar = async () => {
     if (fechaInicio && fechaFin) {
+      setLoading(true);
       try {
         const response = await axios.get(
-          `https://banco-leche-backend.onrender.com/api/donadora_detalle/resumen-por-servicio?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
+          `http://localhost:8080/api/donadora_detalle/stats/?fecha_inicio=${fechaInicio.toISOString().split('T')[0]}&fecha_fin=${fechaFin.toISOString().split('T')[0]}`
         );
-        const data = response.data;
         
-        const totalesGenerales = data.find(servicio => servicio.servicio_tipo === 'TOTAL GENERAL');
-        const servicios = data.filter(servicio => servicio.servicio_tipo !== 'TOTAL GENERAL');
-
-        setResumen(servicios);
-        setTotales(totalesGenerales);
+        const { data } = response;
+        
+        setResumenExtra(data.litros_por_servicio.extrahospitalario);
+        setResumenIntra(data.litros_por_servicio.intrahospitalario);
+        setEstadisticas(data.estadisticas_generales);
       } catch (error) {
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Hubo un problema al obtener el resumen. Por favor, intenta nuevamente.',
         });
+      } finally {
+        setLoading(false);
       }
     } else {
       Swal.fire({
@@ -57,87 +60,70 @@ const ResumenPorServicio = () => {
     // Añadir logo
     const imgLogo = new Image();
     imgLogo.src = logo;
-    doc.addImage(imgLogo, 'PNG', 10, 10, 40, 35); // Posición y tamaño del logo
+    doc.addImage(imgLogo, 'PNG', 10, 10, 35, 33);
+
+    const imgLogo2 = new Image();
+    imgLogo2.src = logo2;
+    doc.addImage(imgLogo2, 'PNG', 155, 15, 35, 15);
 
     // Agrega el título con fechas
     const fechaInicioFormatted = fechaInicio ? fechaInicio.toLocaleDateString() : 'N/A';
     const fechaFinFormatted = fechaFin ? fechaFin.toLocaleDateString() : 'N/A';
+    doc.setFontSize(12);
+    doc.text('Dr. Miguel Angel Soto Galindo',75,20);
+    doc.text('Coordinador Banco de Leche Humana',69,25);
+    doc.text('Jefe Departamento de Pediatría ',75,30);
+
     doc.setFontSize(14);
     doc.text(`Resumen de donadoras de ${fechaInicioFormatted} a ${fechaFinFormatted}`, 50, 43);
 
-    // Añadir tabla con jsPDF autoTable
-    const tableData = resumen.map((servicio) => [
-      servicio.servicio_tipo,
-      servicio.total_donaciones,
-      servicio.total_donadoras,
-      servicio.total_litros,
-    ]);
+    // Estadísticas Generales
+    doc.setFontSize(12);
+    doc.text('Estadísticas Generales:', 10, 55);
+    doc.text(`Total Donadoras: ${estadisticas?.total_donadoras}`, 10, 70);
+    doc.text(`Donadoras Nuevas: ${estadisticas?.total_nuevas}`, 100, 70);
+    doc.text(`Donadoras Constantes: ${estadisticas?.total_constantes}`, 100, 75);
+    doc.text(`Total Donaciones: ${estadisticas?.total_donaciones}`, 10, 75);
+    doc.text(`Total Litros: ${estadisticas?.total_litros}`, 10, 80);
 
-    // Agregar el total general al final de los datos de la tabla
-    if (totales) {
-      tableData.push([
-        totales.servicio_tipo, // 'TOTAL GENERAL'
-        totales.total_donaciones,
-        totales.total_donadoras,
-        totales.total_litros,
-      ]);
+    // Servicios Extrahospitalarios
+    if (resumenExtra.length > 0) {
+      doc.text('Servicios Extrahospitalarios:', 10, 90);
+      doc.autoTable({
+        head: [['Servicio', 'Total Donaciones', 'Total Donadoras', 'Litros', 'Nuevas','Constantes']],
+        body: resumenExtra.map(item => [
+          item.servicio,
+          item.total_donaciones,
+          item.total_donadoras,
+          item.litros,
+          item.nuevas,
+          item.constantes
+        ]),
+        startY: 100
+      });
     }
 
-    doc.autoTable({
-      head: [['Tipo de Servicio', 'Total Donaciones', 'Total Donadoras', 'Total Litros']],
-      body: tableData,
-      margin: { top: 50 },
-    });
-
-    // Verificar si la gráfica cabe debajo de la tabla
-    const pageHeight = doc.internal.pageSize.height;
-    const yPosition = doc.lastAutoTable.finalY + 10;
-
-    if (yPosition + 100 <= pageHeight) {
-      // Captura la gráfica como imagen y la inserta debajo de la tabla
-      const chart = document.getElementById('graficoResumen');
-      const canvasGrafica = await html2canvas(chart);
-      const imgGrafica = canvasGrafica.toDataURL('image/png');
-      doc.addImage(imgGrafica, 'PNG', 10, yPosition, 190, 100);
-    } else {
-      // Si no cabe, crear una nueva página para la gráfica
-      doc.addPage();
-      const chart = document.getElementById('graficoResumen');
-      const canvasGrafica = await html2canvas(chart);
-      const imgGrafica = canvasGrafica.toDataURL('image/png');
-      doc.addImage(imgGrafica, 'PNG', 10, 10, 190, 100);
+    // Servicios Intrahospitalarios
+    if (resumenIntra.length > 0) {
+      const startY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 110;
+      doc.text('Servicios Intrahospitalarios:', 10, startY);
+      doc.autoTable({
+        head: [['Servicio', 'Total Donaciones', 'Total Donadoras', 'Litros', 'Nuevas', 'Constantes']],
+        body: resumenIntra.map(item => [
+          item.servicio,
+          item.total_donaciones,
+          item.total_donadoras,
+          item.litros,
+          item.nuevas,
+          item.constantes
+        ]),
+        startY: startY + 10
+      });
     }
 
     // Pie de página
-    doc.setFontSize(12);
-    doc.text('Dr. Miguel Angel Soto Galindo', 10, pageHeight - 30);
-    doc.text('Coordinador Banco de Leche Humana', 10, pageHeight - 25);
-    doc.text('Jefe Departamento de Pediatría ', 10, pageHeight - 20);
-
-    // Descarga el PDF
+  
     doc.save('ResumenPorServicio.pdf');
-  };
-
-  // Datos para la gráfica
-  const chartData = {
-    labels: resumen.map((servicio) => servicio.servicio_tipo),
-    datasets: [
-      {
-        label: 'Total Donaciones',
-        data: resumen.map((servicio) => servicio.total_donaciones),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      },
-      {
-        label: 'Total Donadoras',
-        data: resumen.map((servicio) => servicio.total_donadoras),
-        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-      },
-      {
-        label: 'Total Litros',
-        data: resumen.map((servicio) => servicio.total_litros),
-        backgroundColor: 'rgba(255, 159, 64, 0.6)',
-      },
-    ],
   };
 
   addLocale('es', {
@@ -182,59 +168,143 @@ const ResumenPorServicio = () => {
           />
         </div>
 
-        <Button color="primary" onClick={handleFiltrar}>
+        <Button color="primary" onClick={handleFiltrar} className="me-2">
           <FaFilter className="me-2" /> Filtrar
+        </Button>
+
+        <Button color="secondary" onClick={handlePrint}>
+          <FaPrint className="me-2" /> Imprimir Resumen
         </Button>
       </div>
 
-      <Button color="secondary" onClick={handlePrint}>
-        <FaPrint className="me-2" /> Imprimir Resumen
-      </Button>
+      {estadisticas && (
+        <Row className="mb-4">
+          <Col>
+            <Card>
+              <CardBody>
+                <h5>Estadísticas Generales</h5>
+                <Row>
+                  <Col md={4}>
+                    <p>Total Donadoras: {estadisticas.total_donadoras}</p>
+                    <p>Total Donaciones: {estadisticas.total_donaciones}</p>
+                  </Col>
+                  <Col md={4}>
+                    <p>Donadoras Nuevas: {estadisticas.total_nuevas}</p>
+                    <p>Donadoras Constantes: {estadisticas.total_constantes}</p>
+                  </Col>
+                  <Col md={4}>
+                    <p>Total Litros: {estadisticas.total_litros}</p>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      )}
 
-      <Table striped responsive id="tablaResumen">
-        <thead>
-          <tr>
-            <th>Tipo de Servicio</th>
-            <th>Total Donaciones</th>
-            <th>Total Donadoras</th>
-            <th>Total Litros</th>
-          </tr>
-        </thead>
-        <tbody>
-          {resumen.length > 0 ? (
-            resumen.map((servicio, index) => (
-              <tr key={index}>
-                <td>{servicio.servicio_tipo}</td>
-                <td>{servicio.total_donaciones}</td>
-                <td>{servicio.total_donadoras}</td>
-                <td>{servicio.total_litros}</td>
+      {/* Servicios Extrahospitalarios */}
+      <div className="mb-4">
+        <h4>Servicios Extrahospitalarios</h4>
+        <Table striped responsive>
+          <thead>
+            <tr>
+              <th>Servicio</th>
+              <th>Total Donaciones</th>
+              <th>Total Donadoras</th>
+              <th>Litros</th>
+              <th>Constante</th>
+              <th>Nuevas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {resumenExtra.length > 0 ? (
+              resumenExtra.map((servicio, index) => (
+                <tr key={index}>
+                  <td>{servicio.servicio}</td>
+                  <td>{servicio.total_donaciones}</td>
+                  <td>{servicio.total_donadoras}</td>
+                  <td>{servicio.litros}</td>
+                  <td>{servicio.constantes}</td>
+                  <td>{servicio.nuevas}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No se encontraron resultados.
+                </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="text-center">
-                No se encontraron resultados.
-              </td>
-            </tr>
-          )}
-        </tbody>
-        {totales && (
-          <tfoot>
-            <tr>
-              <th>{totales.servicio_tipo}</th>
-              <th>{totales.total_donaciones}</th>
-              <th>{totales.total_donadoras}</th>
-              <th>{totales.total_litros}</th>
-            </tr>
-          </tfoot>
-        )}
-      </Table>
-
-      {/* Gráfico de barras debajo de la tabla */}
-      <div className="my-5" id="graficoResumen">
-        <h4>Visualización de Datos</h4>
-        <Bar data={chartData} options={{ responsive: true }} />
+            )}
+          </tbody>
+        </Table>
       </div>
+
+      {/* Servicios Intrahospitalarios */}
+      <div className="mb-4">
+        <h4>Servicios Intrahospitalarios</h4>
+        <Table striped responsive>
+          <thead>
+            <tr>
+              <th>Servicio</th>
+              <th>Total Donaciones</th>
+              <th>Total Donadoras</th>
+              <th>Litros</th>
+              <th>Constante</th>
+              <th>Nuevas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {resumenIntra.length > 0 ? (
+              resumenIntra.map((servicio, index) => (
+                <tr key={index}>
+                  <td>{servicio.servicio}</td>
+                  <td>{servicio.total_donaciones}</td>
+                  <td>{servicio.total_donadoras}</td>
+                  <td>{servicio.litros}</td>
+                  <td>{servicio.constantes}</td>
+                  <td>{servicio.nuevas}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No se encontraron resultados.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
+
+      {/* Gráfico de barras */}
+      {(resumenExtra.length > 0 || resumenIntra.length > 0) && (
+        <div className="my-5" id="graficoResumen">
+          <h4>Visualización de Datos</h4>
+          <Bar 
+            data={{
+              labels: [...resumenExtra, ...resumenIntra].map(servicio => servicio.servicio),
+              datasets: [
+                {
+                  label: 'Total Donaciones',
+                  data: [...resumenExtra, ...resumenIntra].map(servicio => servicio.total_donaciones),
+                  backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                },
+                {
+                  label: 'Total Donadoras',
+                  data: [...resumenExtra, ...resumenIntra].map(servicio => servicio.total_donadoras),
+                  backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                },
+                {
+                  label: 'Litros',
+                  data: [...resumenExtra, ...resumenIntra].map(servicio => servicio.litros),
+                  backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                },
+              ],
+            }}
+            options={{ responsive: true }}
+          />
+        </div>
+      )}
     </Container>
   );
 };
