@@ -10,6 +10,7 @@ import InsertarPersonaModal from './InsertarPersonaModal';
 const url = "https://banco-leche-backend.onrender.com/api/estimulacion/";
 const personalUrl = 'https://banco-leche-backend.onrender.com/api/personal_estimulacion/';
 const servicioUrl = 'https://banco-leche-backend.onrender.com/api/servicio_in/';
+const personalUrl1= 'https://banco-leche-backend.onrender.com/api/personal/';
 
 class ShowStimulation extends Component {
   constructor(props) {
@@ -17,6 +18,7 @@ class ShowStimulation extends Component {
     this.state = {
       estimulaciones: [],
       personal: [],
+      personal1:[],
       servicios: [],
       searchPersonal: '', // Nuevo estado para la búsqueda de personal
       filteredPersonal: [], // Nuevo estado para los resultados filtrados
@@ -45,6 +47,7 @@ class ShowStimulation extends Component {
 
   componentDidMount() {
     this.cargarDatos(); 
+    this.obtenerPersonal1();
   }
   handleSearchChange = (e) => {
     this.setState({ searchTerm: e.target.value });
@@ -62,6 +65,17 @@ class ShowStimulation extends Component {
     this.setState({ personal: response.map });
   };
 
+  obtenerPersonal1 = async () => {
+    try {
+      const response = await axios.get(personalUrl1);
+      this.setState({ personal1: response.data.personal }); // Almacena los datos en el estado `personal1`
+    } catch (error) {
+      console.error('Error al obtener los datos de personal:', error);
+      Swal.fire('Error', 'No se pudieron cargar los datos de personal', 'error');
+    }
+  };
+  
+
   handlePersonaInsertada = (nuevaPersona) => {
     this.setState((prevState) => ({
       personal: [...prevState.personal, nuevaPersona],
@@ -72,6 +86,7 @@ class ShowStimulation extends Component {
       }
     }));
   };
+
   formatDateForInput = (dateString) => {
     if (!dateString) return '';
     // Create date object and adjust for timezone
@@ -89,7 +104,6 @@ class ShowStimulation extends Component {
     const adjustedDate = new Date(date.getTime() + timezoneOffset);
     return adjustedDate.toLocaleDateString();
   };
- 
 
   handleNavigate = () => {
     // Usa la función navigate pasada como prop
@@ -136,15 +150,16 @@ class ShowStimulation extends Component {
   };
 
   validateForm = () => {
-    const { id_personal_estimulacion, fecha, id_intrahospitalario } = this.state.form;
-    console.log('Validating:', { id_personal_estimulacion, fecha, id_intrahospitalario });
-    if (!id_personal_estimulacion || !fecha || !id_intrahospitalario) {
+    const { id_personal_estimulacion, fecha, id_intrahospitalario, id_personal } = this.state.form;
+    console.log('Validating:', { id_personal_estimulacion, fecha, id_intrahospitalario, id_personal });
+    if (!id_personal_estimulacion || !fecha || !id_intrahospitalario || !id_personal) {
       Swal.fire('Error', 'Todos los campos son obligatorios', 'error');
       return false;
     }
     return true;
   };
   
+
 
   peticionPost = async () => {
     if (!this.validateForm()) return;
@@ -176,7 +191,8 @@ class ShowStimulation extends Component {
         id_intrahospitalario: parseInt(this.state.form.id_intrahospitalario),
         constante: Boolean(this.state.form.constante),
         nueva: Boolean(this.state.form.nueva),
-        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0] // Format as YYYY-MM-DD
+        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0], // Format as YYYY-MM-DD
+        id_personal: parseInt(this.state.form.id_personal)
       };
   
       await axios.put(`${url}${this.state.form.id_estimulacion}`, formData);
@@ -254,6 +270,9 @@ modalInsertar = () => {
     if (name === 'id_personal_estimulacion' || name === 'id_intrahospitalario') {
       val = value.toString();
     }
+    if (name === 'id_personal') {
+      val = value.toString();
+    }
     
     this.setState(prevState => ({
       form: {
@@ -303,7 +322,7 @@ modalInsertar = () => {
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen estimulacion
           </Button>
-          <br />
+          <br /><br />
           <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
           <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
           Mostrar Resumen por nombre
@@ -318,11 +337,12 @@ modalInsertar = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Personal</th>
+                  <th>Persona-estimulada</th>
                   <th>Fecha</th>
                   <th>Servicio</th>
                   <th>Constante</th>
                   <th>Nueva</th>
+                  <th>Personal</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -336,6 +356,8 @@ modalInsertar = () => {
                     <td>{estimulacion.servicio_ins?.servicio || 'N/A'}</td>
                     <td> <input type="checkbox"checked={estimulacion.constante}disabledstyle={{ accentColor: "blue" }} /></td>
                     <td> <input type="checkbox"checked={estimulacion.nueva} disabledstyle={{ accentColor: "blue" }} /></td>
+                    <td>{estimulacion.personals?.nombre || 'N/A'}</td>
+                    
                     <td>
                     <button className="btn btn-primary" onClick={() => this.seleccionarEstimulacion(estimulacion)}>Editar</button>
                      {"  "}
@@ -451,9 +473,9 @@ modalInsertar = () => {
 >
 
           <option value="">Seleccione personal</option>
-          {this.state.personal.map((persona) => (
-            <option key={persona.id_personal_estimulacion} value={persona.id_personal_estimulacion}>
-              {persona.nombre} {persona.apellido}
+          {this.state.personal.map((personal) => (
+            <option key={personal.id_personal_estimulacion} value={personal.id_personal_estimulacion}>
+              {personal.nombre} {personal.apellido}
             </option>
           ))}
         </select>
@@ -514,6 +536,20 @@ modalInsertar = () => {
                   Nueva
                 </label>
               </div>
+              <br></br>
+              <select className="form-control"
+  name="id_personal"
+  value={form.id_personal}
+  onChange={this.handleChange}
+>
+  <option value="">Seleccione personal</option>
+  {this.state.personal1.map((person) => (
+    <option key={person.id_personal} value={person.id_personal}>
+      {person.nombre} {person.apellido} 
+    </option>
+  ))}
+</select>
+
             </div>
 
             </ModalBody>
