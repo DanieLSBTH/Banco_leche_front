@@ -72,18 +72,24 @@ class ShowStimulation extends Component {
       }
     }));
   };
-
   formatDateForInput = (dateString) => {
     if (!dateString) return '';
+    // Create date object and adjust for timezone
     const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
+    const timezoneOffset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
+    const adjustedDate = new Date(date.getTime() + timezoneOffset);
+    return adjustedDate.toISOString().split('T')[0];
   };
 
-  formatDateForInput = (dateString) => {
+  formatDateForDisplay = (dateString) => {
     if (!dateString) return '';
+    // Create date object and adjust for timezone
     const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    const adjustedDate = new Date(date.getTime() + timezoneOffset);
+    return adjustedDate.toLocaleDateString();
   };
+ 
 
   handleNavigate = () => {
     // Usa la función navigate pasada como prop
@@ -144,7 +150,13 @@ class ShowStimulation extends Component {
     if (!this.validateForm()) return;
   
     try {
-      await axios.post(url, this.state.form); // Aquí utilizamos this.state.form en lugar de getInitialFormState
+      // Adjust the date for timezone before sending to server
+      const formData = {
+        ...this.state.form,
+        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0] // Format as YYYY-MM-DD
+      };
+      
+      await axios.post(url, formData);
       this.modalInsertar();
       this.peticionGet();
       Swal.fire('Éxito', 'Estimulación agregada exitosamente', 'success');
@@ -163,7 +175,8 @@ class ShowStimulation extends Component {
         id_personal_estimulacion: parseInt(this.state.form.id_personal_estimulacion),
         id_intrahospitalario: parseInt(this.state.form.id_intrahospitalario),
         constante: Boolean(this.state.form.constante),
-        nueva: Boolean(this.state.form.nueva)
+        nueva: Boolean(this.state.form.nueva),
+        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0] // Format as YYYY-MM-DD
       };
   
       await axios.put(`${url}${this.state.form.id_estimulacion}`, formData);
@@ -319,7 +332,7 @@ modalInsertar = () => {
                   <tr key={estimulacion.id_estimulacion}>
                     <td>{estimulacion.id_estimulacion}</td>
                     <td>{estimulacion.personal_estimulaciones?.nombre +' '+ estimulacion.personal_estimulaciones?.apellido }</td>
-                    <td>{new Date(estimulacion.fecha).toLocaleDateString()}</td>
+                    <td>{this.formatDateForDisplay(estimulacion.fecha)}</td>
                     <td>{estimulacion.servicio_ins?.servicio || 'N/A'}</td>
                     <td> <input type="checkbox"checked={estimulacion.constante}disabledstyle={{ accentColor: "blue" }} /></td>
                     <td> <input type="checkbox"checked={estimulacion.nueva} disabledstyle={{ accentColor: "blue" }} /></td>
