@@ -35,7 +35,7 @@ const ResumenControlLecheFrascos = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/control_de_leches/control-de-leche/totales?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
+          `https://banco-leche-backend.onrender.com/api/control_de_leches/control-de-leche/totales?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
         );
         
         setDatosControl(response.data);
