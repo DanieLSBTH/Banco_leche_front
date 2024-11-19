@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
+import Select from 'react-select';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { Paginator } from 'primereact/paginator'; // Importar el componente de paginación
+import { useNavigate } from 'react-router-dom';
+import { FaChartBar } from 'react-icons/fa';
+import { Button } from 'reactstrap';
 
 const urlControlLeche = "https://banco-leche-backend.onrender.com/api/control_de_leches/";
 const urlTrabajoPasteurizaciones = "https://banco-leche-backend.onrender.com/api/trabajo_de_pasteurizaciones/";
+
+
 
 class ShowControlLeche extends Component {
   state = {
@@ -16,11 +22,17 @@ class ShowControlLeche extends Component {
     form: {
       id_control_leche: '',
       id_pasteurizacion: '',
+      no_frascoregistro: '',
+      frasco: false,
+      tipo_frasco: '', // Nuevo campo
+      unidosis: false, // Nuevo campo
+      tipo_unidosis: '', // Nuevo campo
       fecha_almacenamiento: '',
       volumen_ml_onza: '',
       tipo_de_leche: '',
       fecha_entrega: '',
       responsable: '',
+      letra_adicional:'',
       kcal_l: '',
       porcentaje_grasa: '',
       acidez: '',
@@ -104,38 +116,53 @@ class ShowControlLeche extends Component {
       }));
     }
   };
-
+  handleNavigate = () => {
+    // Usa la función navigate pasada como prop
+    this.props.navigate('/resumencontrollechefrascos');
+  };
   validateForm = () => {
     const { form } = this.state;
     let errors = {};
     let formIsValid = true;
-
-    // Validaciones
+  
+    // Validaciones existentes
     if (!form.id_pasteurizacion) {
       formIsValid = false;
       errors["id_pasteurizacion"] = "Debe seleccionar un número de frasco.";
     }
-    if (!form.fecha_almacenamiento) {
-      formIsValid = false;
-      errors["fecha_almacenamiento"] = "La fecha de almacenamiento es requerida.";
-    }
-    if (!form.volumen_ml_onza || form.volumen_ml_onza <= 0) {
-      formIsValid = false;
-      errors["volumen_ml_onza"] = "El volumen debe ser mayor a 0.";
-    }
+    
     if (!form.tipo_de_leche) {
       formIsValid = false;
       errors["tipo_de_leche"] = "El tipo de leche es requerido.";
     }
-    if (!form.fecha_entrega) {
-      formIsValid = false;
-      errors["fecha_entrega"] = "La fecha de entrega es requerida.";
+  
+    // Nuevas validaciones para frasco y unidosis
+    if (form.frasco === true) {
+      if (!form.tipo_frasco) {
+        formIsValid = false;
+        errors["tipo_frasco"] = "Debe especificar el tipo de frasco.";
+      }
+    }
+  
+    if (form.unidosis === true) {
+      if (!form.tipo_unidosis) {
+        formIsValid = false;
+        errors["tipo_unidosis"] = "Debe especificar el tipo de unidosis.";
+      }
+    }
+    if (!form.fecha_almacenamiento) {
+      if (!form.fecha_almacenamiento) {
+        formIsValid = false;
+        errors["fecha_almacenamiento"] = "Debe especificar la fecha de almacenamiento.";
+      }
     }
     if (!form.responsable) {
-      formIsValid = false;
-      errors["responsable"] = "El responsable es requerido.";
+      if (!form.responsable) {
+        formIsValid = false;
+        errors["responsable"] = "Debe especificar un responsable.";
+      }
     }
-
+  
     this.setState({ errors });
     return formIsValid;
   };
@@ -145,17 +172,27 @@ class ShowControlLeche extends Component {
       const { form, currentPage, pageSize } = this.state;
       const dataToSend = { ...form };
       delete dataToSend.id_control_leche;
-
-      await axios.post(urlControlLeche, dataToSend)
-        .then(response => {
-          this.modalInsertar();
-          this.fetchControlLeches(currentPage, pageSize);
-          Swal.fire('Éxito', 'Registro creado exitosamente', 'success');
-        })
-        .catch(error => {
-          console.log('Error al crear el registro:', error.message);
-          Swal.fire('Error', 'Error al crear el registro', 'error');
-        });
+  
+      // Asegurarse de que los campos relacionados estén correctamente configurados
+      if (dataToSend.frasco === true) {
+        dataToSend.unidosis = false;
+        dataToSend.tipo_unidosis = null;
+      }
+  
+      if (dataToSend.unidosis === true) {
+        dataToSend.frasco = false;
+        dataToSend.tipo_frasco = null;
+      }
+  
+      try {
+        const response = await axios.post(urlControlLeche, dataToSend);
+        this.modalInsertar();
+        this.fetchControlLeches(currentPage, pageSize);
+        Swal.fire('Éxito', 'Registro creado exitosamente', 'success');
+      } catch (error) {
+        console.log('Error al crear el registro:', error.message);
+        Swal.fire('Error', 'Error al crear el registro', 'error');
+      }
     }
   };
 
@@ -204,24 +241,102 @@ class ShowControlLeche extends Component {
     });
   };
 
-  handleChange = (e) => {
-    const { name, value } = e.target;
-    this.setState(prevState => ({
-      form: { ...prevState.form, [name]: value }
-    }));
+// Elimina los dos handleChange actuales y reemplázalos por este:
+handleChange = (e) => {
+  const { name, type, checked, value } = e.target;
+  
+  this.setState(prevState => {
+    const newForm = { ...prevState.form };
 
-    if (this.state.errors[name]) {
+    if (type === 'checkbox') {
+      newForm[name] = checked;
+      
+      // Si se desmarca un checkbox, limpia su campo relacionado
+      if (!checked) {
+        if (name === 'frasco') {
+          newForm.tipo_frasco = '';
+        } else if (name === 'unidosis') {
+          newForm.tipo_unidosis = '';
+        }
+      }
+      
+      // Si se marca un checkbox, desmarca y limpia el otro
+      if (checked) {
+        if (name === 'frasco') {
+          newForm.unidosis = false;
+          newForm.tipo_unidosis = '';
+        } else if (name === 'unidosis') {
+          newForm.frasco = false;
+          newForm.tipo_frasco = '';
+        }
+      }
+    } else {
+      newForm[name] = value;
+    }
+
+    // Limpiar errores si existen
+    const newErrors = { ...prevState.errors };
+    if (newErrors[name]) {
+      delete newErrors[name];
+    }
+
+    return { 
+      form: newForm,
+      errors: newErrors
+    };
+  });
+};
+// En tu componente, agrega este método para formatear las opciones
+formatPasteurizacionesOptions = () => {
+  return Array.isArray(this.state.pasteurizaciones) ? 
+    this.state.pasteurizaciones.map(pasteurizacion => ({
+      value: pasteurizacion.id_pasteurizacion,
+      label: `${pasteurizacion.no_frasco}`
+    })) : [];
+};
+
+// Modifica el handlePasteurizacionChange
+handlePasteurizacionChange = (selectedOption) => {
+  if (selectedOption) {
+    const parsedId = parseInt(selectedOption.value, 10);
+    const pasteurizacion = this.state.pasteurizaciones.find(p => p.id_pasteurizacion === parsedId);
+    
+    if (pasteurizacion) {
       this.setState(prevState => ({
-        errors: { ...prevState.errors, [name]: undefined }
+        form: {
+          ...prevState.form,
+          id_pasteurizacion: selectedOption.value,
+          kcal_l: pasteurizacion.kcal_l,
+          porcentaje_grasa: pasteurizacion.porcentaje_grasa,
+          acidez: pasteurizacion.acidez
+        },
+        errors: { ...prevState.errors, id_pasteurizacion: undefined }
       }));
     }
-  };
-
+  } else {
+    this.setState(prevState => ({
+      form: { 
+        ...prevState.form, 
+        id_pasteurizacion: '',
+        kcal_l: '',
+        porcentaje_grasa: '',
+        acidez: ''
+      },
+      errors: { ...prevState.errors, id_pasteurizacion: "Debe seleccionar un número de frasco." }
+    }));
+  }
+};
   render() {
     const { form, controlLeches, pasteurizaciones, modalInsertar, errors, totalRecords, currentPage, pageSize } = this.state;
+    const navigate = this.props.navigate; // Obtenemos la función navigate desde props
 
     return (
       <div className="App container-fluid">
+        <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
+          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
+          Mostrar Resumen de frascos
+          </Button>
+          <br />
         <button 
           className="btn btn-success mb-3" 
           onClick={() => { 
@@ -254,9 +369,9 @@ class ShowControlLeche extends Component {
                 controlLeches.map(control => (
                   <tr key={control.id_control_leche}>
                     <td>{control.id_control_leche}</td>
-                    <td>{control.trabajo_de_pasteurizaciones ? control.trabajo_de_pasteurizaciones.no_frasco : ''}</td>
+                    <td>{control.no_frascoregistro}</td>
                     <td>{control.fecha_almacenamiento}</td>
-                    <td>{control.volumen_ml_onza}</td>
+                    <td>{control.volumen_ml_onza +'ml'}</td>
                     <td>{control.trabajo_de_pasteurizaciones ? control.trabajo_de_pasteurizaciones.kcal_l : ''}</td>
                     <td>{control.trabajo_de_pasteurizaciones ? control.trabajo_de_pasteurizaciones.porcentaje_grasa : ''}</td>
                     <td>{control.trabajo_de_pasteurizaciones ? control.trabajo_de_pasteurizaciones.acidez : ''}</td>
@@ -309,46 +424,139 @@ class ShowControlLeche extends Component {
         <Modal isOpen={modalInsertar}>
           <ModalHeader>{form && form.id_control_leche ? 'Actualizar Registro' : 'Agregar Registro'}</ModalHeader>
           <ModalBody>
-            <div className="form-group">
-              <label>No. Frasco</label>
-              <select 
-                className={`form-control ${errors.id_pasteurizacion ? 'is-invalid' : ''}`} 
-                onChange={(e) => this.handlePasteurizacionChange(e.target.value)} 
-                value={form ? form.id_pasteurizacion : ''}>
-                <option value="">Seleccione el número de frasco</option>
-                {Array.isArray(pasteurizaciones) && pasteurizaciones.length > 0 ? (
-                  pasteurizaciones.map(pasteurizacion => (
-                    <option key={pasteurizacion.id_pasteurizacion} value={pasteurizacion.id_pasteurizacion}>
-                      {pasteurizacion.no_frasco}
-                    </option>
-                  ))
-                ) : (
-                  <option disabled>No hay frascos disponibles</option>
-                )}
-              </select>
-              <div className="invalid-feedback">{errors.id_pasteurizacion}</div>
-            </div>
+<div className="form-group">
+  <label>No. Frasco</label>
+  <Select
+    className={errors.id_pasteurizacion ? 'is-invalid' : ''}
+    options={this.formatPasteurizacionesOptions()}
+    value={this.formatPasteurizacionesOptions().find(
+      option => option.value === (form.id_pasteurizacion || '')
+    )}
+    onChange={this.handlePasteurizacionChange}
+    isClearable
+    isSearchable
+    placeholder="Buscar número de frasco..."
+    noOptionsMessage={() => "No hay frascos disponibles"}
+    styles={{
+      control: (baseStyles, state) => ({
+        ...baseStyles,
+        borderColor: errors.id_pasteurizacion ? '#dc3545' : state.isFocused ? '#80bdff' : '#ced4da',
+        boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(0,123,255,.25)' : 'none',
+        '&:hover': {
+          borderColor: errors.id_pasteurizacion ? '#dc3545' : '#80bdff'
+        }
+      }),
+      placeholder: (baseStyles) => ({
+        ...baseStyles,
+        color: '#6c757d'
+      }),
+      input: (baseStyles) => ({
+        ...baseStyles,
+        color: '#495057'
+      }),
+      option: (baseStyles, { isFocused, isSelected }) => ({
+        ...baseStyles,
+        backgroundColor: isSelected 
+          ? '#007bff' 
+          : isFocused 
+            ? '#f8f9fa'
+            : null,
+        color: isSelected ? 'white' : '#495057',
+        ':active': {
+          backgroundColor: '#007bff',
+          color: 'white'
+        }
+      })
+    }}
+  />
+  {errors.id_pasteurizacion && (
+    <div className="invalid-feedback" style={{ display: 'block' }}>
+      {errors.id_pasteurizacion}
+    </div>
+  )}
+</div>
+             {/* Nuevo campo: Unidosis */}
+             <div className="form-check mb-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="frasco"
+                id="frasco"
+                onChange={this.handleChange}
+                checked={form ? form.frasco : false}
+              />
+              <label className="form-check-label" htmlFor="frasco">frasco</label>
+              </div>
+              
+               {/* Nuevo campo: Tipo de Frasco */}
+               <div className="form-group">
+  <label>Tipo de Frasco</label>
+  <select
+    className="form-control"
+    name="tipo_frasco"
+    onChange={this.handleChange}
+    value={form.tipo_frasco || ''}
+    disabled={!form.frasco} // Se deshabilita si frasco es false
+     
+  >
+    <option value="">Seleccione un tipo de frasco</option>
+    <option value="150ml">150ml</option>
+    <option value="180ml">180ml</option>
+  </select>
+</div>
+
+
+  <div className="form-check mb-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="unidosis"
+                id="unidosis"
+                onChange={this.handleChange}
+                checked={form ? form.unidosis : false}
+              />
+              <label className="form-check-label" htmlFor="unidosis">unidosis</label>
+              </div>
+
+  {/* Nuevo campo: Tipo Unidosis */}
+  <div className="form-group">
+  <label>Tipo de Unidosis</label>
+  <select
+    className="form-control"
+    name="tipo_unidosis"
+    onChange={this.handleChange}
+    value={form.tipo_unidosis || ''}
+    disabled={!form.unidosis} // Se deshabilita si unidosis es false
+      
+  >
+    <option value="">Seleccione un tipo de unidosis</option>
+    <option value="10ml">10ml</option>
+    <option value="20ml">20ml</option>
+    <option value="30ml">30ml</option>
+  </select>
+</div>
+<div className="form-group">
+<label>Identificador frasco adicional(opcional)</label>
+              <input 
+                type="text" 
+                className={`form-control `} 
+                name="letra_adicional" 
+                id="letra_adicional"
+                onChange={this.handleChange} 
+                value={form ? form.letra_adicional : ''} 
+              />
+  </div>
             <div className="form-group">
               <label>Fecha de Almacenamiento</label>
               <input 
                 type="date" 
-                className={`form-control ${errors.fecha_almacenamiento ? 'is-invalid' : ''}`} 
+                className={`form-control ${errors.fecha_almacenamiento ? 'is-invalid' : ''} `} 
                 name="fecha_almacenamiento" 
                 onChange={this.handleChange} 
                 value={form ? form.fecha_almacenamiento : ''} 
               />
               <div className="invalid-feedback">{errors.fecha_almacenamiento}</div>
-            </div>
-            <div className="form-group">
-              <label>Volumen (ml/onza)</label>
-              <input 
-                type="number" 
-                className={`form-control ${errors.volumen_ml_onza ? 'is-invalid' : ''}`} 
-                name="volumen_ml_onza" 
-                onChange={this.handleChange} 
-                value={form ? form.volumen_ml_onza : ''} 
-              />
-              <div className="invalid-feedback">{errors.volumen_ml_onza}</div>
+            
               <div className="form-group">
   <label>Tipo de Leche</label>
   <select 
@@ -369,7 +577,7 @@ class ShowControlLeche extends Component {
               <label>Fecha de Entrega</label>
               <input 
                 type="date" 
-                className={`form-control ${errors.fecha_entrega ? 'is-invalid' : ''}`} 
+                className={`form-control`} 
                 name="fecha_entrega" 
                 onChange={this.handleChange} 
                 value={form ? form.fecha_entrega : ''} 
@@ -418,5 +626,9 @@ class ShowControlLeche extends Component {
     );
   }
 }
+function ResumenControlLecheFrascosWrapper(){
+  const navigate = useNavigate();
+  return <ShowControlLeche navigate={navigate} />;
 
-export default ShowControlLeche;
+}
+export default ResumenControlLecheFrascosWrapper;

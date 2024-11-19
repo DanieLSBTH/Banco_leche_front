@@ -31,6 +31,7 @@ import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
 import ShowEstimulacionPersonas from './components/Formularios/ShowEstimulacionPersonas';
 import ResumenEstimulacionNombre from './components/Formularios/ResumenEstimulacionNombre';
 import ResumenDonadoraNombre from './components/Formularios/ResumenDonadoraNombre';
+import ResumenControlLecheFrascos from './components/Formularios/ResumenControlLecheFrascos';
 
 function App() {
   return (
@@ -61,6 +62,8 @@ function App() {
             
             <Route path="/showpasteurizacion" element={<PrivateRoute><ShowPasteurizacion /></PrivateRoute>}/>
             <Route path="/showcontrolleche" element={<PrivateRoute><ShowControlLeche /></PrivateRoute>}/>
+            <Route path="/resumencontrollechefrascos" element={<PrivateRoute><ResumenControlLecheFrascos /></PrivateRoute>}/>
+
             <Route path="/showsolicitudleche" element={<PrivateRoute><ShowSolicitudLeche /></PrivateRoute>}/>
             <Route path="/resumen-por-solicitud" element={<PrivateRoute><ResumenPorFechaSolicitud /></PrivateRoute>}/>
             <Route path="/chatbotexample" element={<PrivateRoute><ChatBotExample /></PrivateRoute>}/>

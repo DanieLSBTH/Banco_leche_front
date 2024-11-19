@@ -276,7 +276,7 @@ class ShowSolicitudLeche extends Component {
                     <td>{solicitud.volumen_toma_cc}</td>
                     <td>{solicitud.numero_tomas}</td>
                     <td>{solicitud.total_vol_solicitado}</td>
-                    <td>{controlLeche ? controlLeche.trabajo_de_pasteurizaciones.no_frasco : ''}</td>
+                    <td>{controlLeche ? controlLeche.no_frascoregistro : ''}</td>
                     <td>{controlLeche ? controlLeche.fecha_almacenamiento : ''}</td>
                     <td>{controlLeche ? controlLeche.volumen_ml_onza : ''}</td>
                     <td>{controlLeche ? controlLeche.trabajo_de_pasteurizaciones.kcal_l : ''}</td>
@@ -419,7 +419,7 @@ class ShowSolicitudLeche extends Component {
                     <option value="">Seleccionar</option>
                     {controlLeches.map(control => (
                       <option key={control.id_control_leche} value={control.id_control_leche}>
-                        {control.trabajo_de_pasteurizaciones.no_frasco}
+                        {control.no_frascoregistro}
                       </option>
                     ))}
                   </select>
