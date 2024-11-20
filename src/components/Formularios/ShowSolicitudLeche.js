@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Select from 'react-select'; // Importa react-select
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { FaChartBar } from 'react-icons/fa';
