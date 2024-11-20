@@ -10,11 +10,13 @@ import { Paginator } from 'primereact/paginator';
 const urlSolicitudLeche = "https://banco-leche-backend.onrender.com/api/solicitud_de_leches/";
 const urlControlLeche = "https://banco-leche-backend.onrender.com/api/control_de_leches/";
 
+
 class ShowSolicitudLeche extends Component {
   state = {
     solicitudesLeches: [],
     controlLeches: [],
     modalInsertar: false,
+    filtroControlLeche: '', 
     form: {
       id_solicitud: '',
       registro_medico: '',
@@ -94,6 +96,10 @@ class ShowSolicitudLeche extends Component {
       errors.general = 'El formulario está vacío.';
       formIsValid = false;
     }
+     // Verifica que el objeto form no sea null
+  if (!form) {
+    return { valid: false, errors: { general: "El formulario no está inicializado." } };
+  }
 
     // Verificar cada campo y agregar errores a `errors`
     const requiredFields = [
@@ -127,6 +133,7 @@ class ShowSolicitudLeche extends Component {
 
     this.setState({ errors });
     return formIsValid;
+    
   };
 
   handleControlLecheChange = (id) => {
@@ -140,6 +147,8 @@ class ShowSolicitudLeche extends Component {
       }));
     }
   };
+
+  
 
   peticionPost = async () => {
     if (this.validateForm()) {
@@ -214,7 +223,31 @@ class ShowSolicitudLeche extends Component {
       }));
     }
   };
-
+  
+  formatControlLechesOptions = () => {
+    return this.state.controlLeches.map(control => ({
+      value: control.id_control_leche,
+      label: `${control.no_frascoregistro}`
+    }));
+  };
+  handleControlLecheChange = (selectedOption) => {
+    if (selectedOption) {
+      this.setState(prevState => ({
+        form: {
+          ...prevState.form,
+          id_control_leche: selectedOption.value
+        }
+      }));
+    } else {
+      this.setState(prevState => ({
+        form: { 
+          ...prevState.form, 
+          id_control_leche: ''
+        },
+        errors: { ...prevState.errors, id_control_leche: "Debe seleccionar un control de leche." }
+      }));
+    }
+  };
   render() {
     const { form, solicitudesLeches, controlLeches, modalInsertar, modalEliminar, errors, first, rows, totalRecords,currentPage,  } = this.state;
     const navigate = this.props.navigate; // Obtenemos la función navigate desde props
@@ -406,25 +439,49 @@ class ShowSolicitudLeche extends Component {
                 </div>
                 {/* No. Frasco */}
                 <div className="form-group col-md-6">
-                  <label htmlFor="id_control_leche">No. Frasco</label>
-                  <select
-                    className="form-control"
-                    name="id_control_leche"
-                    onChange={(e) => {
-                      this.handleControlLecheChange(e.target.value);
-                      this.handleChange(e);
-                    }}
-                    value={form ? form.id_control_leche : ''}
-                  >
-                    <option value="">Seleccionar</option>
-                    {controlLeches.map(control => (
-                      <option key={control.id_control_leche} value={control.id_control_leche}>
-                        {control.no_frascoregistro}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.id_control_leche && <div className="invalid-feedback d-block">{errors.id_control_leche}</div>}
-                </div>
+  <label>No. Frasco</label>
+                <Select
+  className={`react-select ${errors.id_control_leche ? 'is-invalid' : ''}`}
+  options={this.formatControlLechesOptions()}
+  onChange={this.handleControlLecheChange}
+  value={this.formatControlLechesOptions().find(option => option.value === (form?.id_control_leche ?? ''))} // Usar el operador de coalescencia nula
+  isClearable
+  isSearchable
+  placeholder="Buscar número de frasco..."
+  noOptionsMessage={() => "No hay frascos disponibles"}
+  styles={{
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      borderColor: errors.id_control_leche ? '#dc3545' : state.isFocused ? '#80bdff' : '#ced4da',
+      boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(0,123,255,.25)' : 'none',
+      '&:hover': {
+        borderColor: errors.id_control_leche ? '#dc3545' : '#80bdff'
+      }
+    }),
+    placeholder: (baseStyles) => ({
+      ...baseStyles,
+      color: '#6c757d'
+    }),
+    input: (baseStyles) => ({
+      ...baseStyles,
+      color: '#495057'
+    }),
+    option: (baseStyles, { isFocused, isSelected }) => ({
+      ...baseStyles,
+      backgroundColor: isSelected 
+        ? '#007bff' 
+        : isFocused 
+          ? '#f8f9fa'
+          : null,
+      color: isSelected ? 'white' : '#495057',
+      ':active': {
+        backgroundColor: '#007bff',
+        color: 'white'
+      }
+    })
+  }}
+/>
+</div>
                 {/* Kcal (O) */}
                 <div className="form-group col-md-6">
                   <label htmlFor="kcal_o">Kcal (O)</label>

@@ -104,6 +104,7 @@ class ShowDonadoraDetalle extends Component {
     // Usa la función navigate pasada como prop
     this.props.navigate('/resumendonadoranombre');
   };
+
   cargarListasRelacionadas = async () => {
     try {
       const [personalRes, servicioExRes, servicioInRes, donadoraRes] = await Promise.all([
@@ -262,8 +263,15 @@ onPageChange = (event) => {
   }
 
   modalInsertarDonadora = () => {
-    this.setState({ modalInsertarDonadora: !this.state.modalInsertarDonadora });
-  }
+    this.setState((prevState) => ({
+      modalInsertarDonadora: !prevState.modalInsertarDonadora,
+      nuevaDonadora: {
+        nombre: '',
+        apellido: '',
+      },
+    }));
+  };
+  
 
   seleccionarDonadoraDetalle = (donadoraDetalle) => {
     this.setState({
@@ -312,13 +320,15 @@ onPageChange = (event) => {
   }
 
   handleNewDonadoraChange = (e) => {
-    this.setState({
+    const { name, value } = e.target;
+    this.setState((prevState) => ({
       nuevaDonadora: {
-        ...this.state.nuevaDonadora,
-        [e.target.name]: e.target.value
-      }
-    });
-  }
+        ...prevState.nuevaDonadora,
+        [name]: value,
+      },
+    }));
+  };
+  
 
   addNewDonadora = async () => {
     const { nuevaDonadora } = this.state;
@@ -529,7 +539,7 @@ onPageChange = (event) => {
               />
               <label className="form-check-label" htmlFor="nueva">Nueva</label>
               </div>
-             
+
               <label htmlFor="id_personal">Personal</label>
               <select className="form-control" name="id_personal" onChange={this.handleChange} value={form ? form.id_personal : ''}>
                 <option value="">Seleccione personal</option>
@@ -562,36 +572,37 @@ onPageChange = (event) => {
         </Modal>
 
         {/* Modal para agregar nueva donadora */}
-        <Modal isOpen={this.state.modalInsertarDonadora} toggle={this.modalInsertarDonadora}>
-          <ModalHeader toggle={this.modalInsertarDonadora}>Agregar Nueva Donadora</ModalHeader>
-          <ModalBody>
-            <div className="form-group">
-              <label htmlFor="nombre">Nombre</label>
-              <input
-                className="form-control"
-                type="text"
-                name="nombre"
-                id="nombre"
-                onChange={this.handleNewDonadoraChange}
-                value={this.state.nuevaDonadora.nombre}
-              />
-              <br />
-              <label htmlFor="apellido">Apellido</label>
-              <input
-                className="form-control"
-                type="text"
-                name="apellido"
-                id="apellido"
-                onChange={this.handleNewDonadoraChange}
-                value={this.state.nuevaDonadora.apellido}
-              />
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <button className="btn btn-success" onClick={this.addNewDonadora}>Agregar</button>
-            <button className="btn btn-secondary" onClick={this.modalInsertarDonadora}>Cancelar</button>
-          </ModalFooter>
-        </Modal>
+<Modal isOpen={this.state.modalInsertarDonadora} toggle={this.modalInsertarDonadora}>
+  <ModalHeader toggle={this.modalInsertarDonadora}>Agregar Nueva Donadora</ModalHeader>
+  <ModalBody>
+    <div className="form-group">
+      <label htmlFor="nombre">Nombre</label>
+      <input
+        className="form-control"
+        type="text"
+        name="nombre"
+        id="nombre"
+        onChange={this.handleNewDonadoraChange}
+        value={this.state.nuevaDonadora.nombre}
+      />
+      <br />
+      <label htmlFor="apellido">Apellido</label>
+      <input
+        className="form-control"
+        type="text"
+        name="apellido"
+        id="apellido"
+        onChange={this.handleNewDonadoraChange}
+        value={this.state.nuevaDonadora.apellido}
+      />
+    </div>
+  </ModalBody>
+  <ModalFooter>
+    <button className="btn btn-success" onClick={this.addNewDonadora}>Agregar</button>
+    <button className="btn btn-secondary" onClick={this.modalInsertarDonadora}>Cancelar</button>
+  </ModalFooter>
+</Modal>
+
       </div>
     );
   }
