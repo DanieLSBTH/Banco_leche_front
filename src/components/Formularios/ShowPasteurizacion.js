@@ -48,22 +48,27 @@ class ShowPasteurizacion extends Component {
   peticionGet = () => {
     const { page, rows, mostrarTodos } = this.state;
     const params = mostrarTodos ? '' : '&mesActual=true';
-    axios.get(`${url}?page=${page}&limit=${rows}${params}`).then(response => {
-      this.setState({ 
-        pasteurizaciones: response.data.pasteurizaciones, // Asigna directamente los datos de personal
-        totalRecords: response.data.totalRecords // Asegúrate de que estás obteniendo el total de registros
+    axios
+      .get(`${url}?page=${page}&limit=${rows}${params}`)
+      .then(response => {
+        this.setState({ 
+          pasteurizaciones: response.data.pasteurizaciones || [], 
+          totalRecords: response.data.totalRecords || 0 
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        Swal.fire('Error', 'No se pudo cargar la lista de pasteurizaciones', 'error');
       });
-    }).catch(error => {
-      console.error('Error fetching data:', error);
-      Swal.fire('Error', 'No se pudo cargar la lista de personal', 'error');
-    });
-  }
+  };
 
-  onPageChange = (event) => {
-    this.setState({ page: event.page + 1 }, () => {
-      this.peticionGet(); // Actualiza los datos cuando se cambia de página
+   // Cambiar página
+   onPageChange = (event) => {
+    const newPage = event.page + 1;
+    this.setState({ page: newPage }, () => {
+      this.peticionGet(); // Actualizar los datos de la página
     });
-  }
+  };
 
   peticionPost = async () => {
     delete this.state.form.id_pasteurizacion;
@@ -218,14 +223,14 @@ class ShowPasteurizacion extends Component {
           </tbody>
         </table>
         </div>
+        <div className="d-flex justify-content-center mt-3">      
         <Paginator 
-  first={(page - 1) * rows} 
-  rows={rows} 
-  totalRecords={totalRecords} 
-  onPageChange={this.onPageChange} 
-/>
-
-
+        first={(page - 1) * rows} 
+        rows={rows} 
+        totalRecords={totalRecords} 
+        onPageChange={this.onPageChange} 
+        /> 
+        </div>
         <div className="modal-dialog">
           <Modal size="lg" isOpen={this.state.modalInsertar} toggle={() => this.modalInsertar()}>
             <ModalHeader toggle={() => this.modalInsertar()}>{this.state.tipoModal === 'insertar' ? 'Insertar Pasteurización' : 'Editar Pasteurización'}</ModalHeader>
