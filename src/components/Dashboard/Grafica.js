@@ -7,6 +7,7 @@ import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import BarsChart from '../Charts/BarsCharts';
 import PiesChart from "../Charts/PiesChart";     // Asegúrate de que la ruta es correcta
 import ResumenMensualSolicitudL from "../Charts/ResumenMensualSolicitudL"; // Asegúrate de que la ruta es correcta
+import ResumenPasteurizacion from '../Charts/ResumenPasteurizacion';
 
 const AnimatedCard = animated(Card);
 
@@ -81,6 +82,11 @@ const DashboardInteractivo = () => {
           <Col lg={6}>
             <ChartCard title="Resumen de Estimulaciones">
               <BarsChart />
+            </ChartCard>
+          </Col>
+          <Col lg={6}>
+            <ChartCard title="Resumen de Pasteurizacion">
+              <ResumenPasteurizacion />
             </ChartCard>
           </Col>
         </Row>
