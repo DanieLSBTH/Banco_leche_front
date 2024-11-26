@@ -1,14 +1,13 @@
 
-import React, { Component } from 'react';
 import axios from 'axios';
 import { Paginator } from 'primereact/paginator';
 import Swal from 'sweetalert2';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaChartBar } from 'react-icons/fa';
+import { FaChartBar, FaAddressCard ,FaBuilding, FaClinicMedical, FaBaby, FaSistrix,FaCalendarDay,FaGlassWhiskey, FaTint, FaFlask ,FaClipboardCheck } from 'react-icons/fa';
+import { FcSurvey } from "react-icons/fc";
 import { Button } from 'reactstrap';
-
-import ResumenPorServicio from './ResumenPorServicio';
+import InsertarDonadoraModal from './InsertarDonadoraModal';
 
 // URLs de las APIs
 const urlDonadoraDetalle = "https://banco-leche-backend.onrender.com/api/donadora_detalle/";
@@ -27,6 +26,7 @@ class ShowDonadoraDetalle extends Component {
     modalInsertar: false,
     modalEliminar: false,
     modalInsertarDonadora: false, // Nuevo estado para el modal de donadora
+    modalAgregarVarios: false, // Estado para controlar el modal "Agregar varios"
     mesActual: false,
     mostrarTodos: false,
     form: {
@@ -63,6 +63,7 @@ class ShowDonadoraDetalle extends Component {
   componentDidMount() {
     this.peticionGet();
     this.cargarListasRelacionadas();
+    
   }
 
   cargarDonadoras = async () => {
@@ -134,6 +135,8 @@ class ShowDonadoraDetalle extends Component {
         searchValue: '', // Limpiar el campo de búsqueda
         filteredDonadoras: [], // Limpiar las sugerencias
         showSuggestions: false // Ocultar las sugerencias
+        
+        
       });
     }).catch(error => {
       console.error('Error fetching data:', error);
@@ -169,7 +172,8 @@ onPageChange = (event) => {
 
     return cleanedData;
   }
-
+ 
+  
   validateForm = () => {
     const { form } = this.state;
     const requiredFields = ['no_frasco', 'id_donadora', 'onzas', 'id_personal'];
@@ -355,6 +359,13 @@ onPageChange = (event) => {
     this.setState({ searchValue: '', filteredDonadoras: [] }); // Limpia el campo y las sugerencias
   };
 
+  toggleModalAgregarVarios = () => {
+    this.setState({ modalAgregarVarios: !this.state.modalAgregarVarios });
+  };
+  actualizarTabla = () => {
+    this.peticionGet();
+  }
+
   render() {
     const { form,searchValue, filteredDonadoras, showSuggestions, mostrarTodos, donadoras, modalInsertarDonadora,donadoraDetalles,totalRecords, rows, page  } = this.state;
     const navigate = this.props.navigate; // Obtenemos la función navigate desde props
@@ -364,29 +375,68 @@ onPageChange = (event) => {
          {/* Campo de búsqueda */}
       
 
-        <div className="d-flex justify-content-between align-items-center mb-3">
-        <button className="btn btn-success" onClick={() => { this.setState({ form: null, tipoModal: 'insertar' }); this.modalInsertar() }}>Agregar Registro</button>
-        <br /><br />
-        
-        <div className="filter-form">
-          <div className="checkbox-container">
-            <input
-              type="checkbox"
-              checked={mostrarTodos}
-              onChange={this.handleMostrarTodosChange}
-            />
-            <label className="checkbox-label">Mostrar todos los registros</label>
-          </div>
-          <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
-          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
-          Mostrar Resumen por Servicio
-          </Button>
-          <br />
-          <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
-          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
-          Mostrar Resumen por nombre
-          </Button>
+         <div className="container-fluid">
+  <div className="row align-items-center mb-3">
+    {/* Botón Agregar Registro */}
+    <div className="col-12 col-md-auto mb-2">
+      <button
+        className="btn btn-success w-100"
+        onClick={() => { 
+          this.setState({ form: null, tipoModal: 'insertar' }); 
+          this.modalInsertar(); 
+        }}
+      >
+        Agregar Registro
+      </button>
+    </div>
+
+    {/* Sección de Filtros y Opciones */}
+    <div className="col-12 col-md">
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+        {/* Checkbox Mostrar Todos */}
+        <div className="checkbox-container d-flex align-items-center mb-2 mb-md-0">
+          <input
+            type="checkbox"
+            checked={mostrarTodos}
+            onChange={this.handleMostrarTodosChange}
+            id="mostrarTodosCheckbox"
+          />
+          <label htmlFor="mostrarTodosCheckbox" className="ms-2">
+            Mostrar todos los registros
+          </label>
         </div>
+
+        {/* Botón Mostrar Resumen por Servicio */}
+        <button
+          className="btn btn-info d-flex align-items-center mb-2 mb-md-0"
+          onClick={this.handleNavigate}
+        >
+          <FaChartBar className="me-2" />
+          Mostrar Resumen por Servicio
+        </button>
+
+        {/* Botón Mostrar Resumen por Nombre */}
+        <button
+          className="btn btn-info d-flex align-items-center"
+          onClick={this.handleNavigate2}
+        >
+          <FaChartBar className="me-2" />
+          Mostrar Resumen por Nombre
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  {/* Modal de Insertar Donadora */}
+  <InsertarDonadoraModal
+          isOpen={modalInsertarDonadora}
+          toggle={this.modalInsertarDonadora}
+          onRegistrosGuardados={this.actualizarTabla} // Agregar esta prop
+          onAddSuccess={() => {
+            this.cargarDonadoras();
+            this.peticionGet();
+          }}
+        />
         </div>
        
         <div className="table-responsive">
@@ -440,125 +490,219 @@ onPageChange = (event) => {
           onPageChange={this.onPageChange}
         />
         
-        <Modal isOpen={this.state.modalInsertar} toggle={() => this.modalInsertar()}>
-          <ModalHeader toggle={() => this.modalInsertar()}>{this.state.tipoModal === 'insertar' ? 'Insertar Registro' : 'Editar Registro'}</ModalHeader>
-          <ModalBody>
-            <div className="Container">
-            <label htmlFor="no_frasco">No. Frasco</label> {/* Nuevo campo no_frasco */}
-              <input className="form-control" type="text" name="no_frasco" id="no_frasco" onChange={this.handleChange} value={form ? form.no_frasco : ''} />
-              <br />
-              <div className="form-group">
-      <label htmlFor="donadora-search">Buscar Donadora:</label>
-      <input
-        type="text"
-        id="donadora-search"
-        className="form-control"
-        placeholder="Nombre de la donadora"
-        value={searchValue}
-        onChange={this.handleSearchChange}
-      />
-          {/* Sugerencias de donadoras */}
-          {this.state.showSuggestions && filteredDonadoras.length > 0 && (
-        <ul className="list-group">
-          {filteredDonadoras.map((donadora) => (
-            <li
-              key={donadora.id_donadora}
-              className="list-group-item list-group-item-action"
-              onClick={() => this.handleDonadoraSelect(donadora)}
-            >
-              {donadora.nombre} {donadora.apellido}
-            </li>
-          ))}
-            </ul>
-          )}
-        </div>
-              <label htmlFor="id_donadora">Donadora</label>
-              <div className="input-group">
-                <select className="form-control" name="id_donadora" onChange={this.handleChange} value={form ? form.id_donadora : ''}>
-                  <option value="">Seleccione una donadora</option>
-                  {this.state.donadoras.map(donadora => (
-                    <option key={donadora.id_donadora} value={donadora.id_donadora}>
-                      {donadora.nombre} {donadora.apellido}
-                    </option>
-                  ))}
-                </select>
-                <div className="input-group-append">
-                  <button className="btn btn-outline-secondary" type="button" onClick={this.modalInsertarDonadora}>
-                    Agregar Nueva Donadora
-                  </button>
-                </div>
-              </div>
-              <br />
-              <label htmlFor="fecha">Fecha</label>
-              <input className="form-control" type="date" name="fecha" id="fecha" onChange={this.handleChange} value={form ? form.fecha : ''} />
-              <br />
-              <label htmlFor="onzas">Onzas</label>
-              <input className="form-control" type="number" name="onzas" id="onzas" onChange={this.handleChange} value={form ? form.onzas : ''} />
-              <br />
-              <label htmlFor="litros">Litros</label>
-              <input className="form-control" type="text" name="litros" id="litros" value={form ? form.litros : ''} readOnly />
-              <br />
-              <label htmlFor="id_extrahospitalario">Servicio Extrahospitalario</label>
-              <select className="form-control" name="id_extrahospitalario" onChange={this.handleChange} value={form ? form.id_extrahospitalario : ''}>
-                <option value="">Seleccione un servicio</option>
-                {this.state.serviciosEx.map(servicio => (
-                  <option key={servicio.id_extrahospitalario} value={servicio.id_extrahospitalario}>
-                    {servicio.servicio}
-                  </option>
-                ))}
-              </select>
-              <br />
-              <label htmlFor="id_intrahospitalario">Servicio Intrahospitalario</label> {/* Nuevo campo para servicios intrahospitalarios */}
-              <select className="form-control" name="id_intrahospitalario" onChange={this.handleChange} value={form ? form.id_intrahospitalario : ''}>
-                <option value="">Seleccione un servicio</option>
-                {this.state.serviciosIn.map(servicio => (
-                  <option key={servicio.id_intrahospitalario} value={servicio.id_intrahospitalario}>{servicio.servicio}</option>
-                ))}
-              </select>
-              <br />
-              <div className="form-check mb-3">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                name="constante"
-                id="constante"
-                onChange={this.handleChange}
-                checked={form ? form.constante : false}
-              />
-              <label className="form-check-label" htmlFor="constante">Constante</label>
-              </div>
+        <Modal isOpen={this.state.modalInsertar} toggle={() => this.modalInsertar()} size="lg">
+  <ModalHeader toggle={() => this.modalInsertar()}>
+    {this.state.tipoModal === 'insertar' ? 'Insertar Registro de Donación' : 'Editar Registro de Donación'}<FcSurvey/>
+  </ModalHeader>
+  <ModalBody>
+    <div className="container-fluid">
+      <div className="row g-3">
+        {/* Columna Izquierda */}
+        <div className="col-md-6">
+          <div className="form-group mb-3">
+            <label htmlFor="no_frasco" className="form-label">No. Frasco <FaGlassWhiskey /></label>
+            <input 
+              className="form-control" 
+              type="text" 
+              name="no_frasco" 
+              id="no_frasco" 
+              onChange={this.handleChange} 
+              value={form ? form.no_frasco : ''} 
+            />
+          </div>
 
-              <div className="form-check mb-3">
+          <div className="form-group mb-3">
+            <label htmlFor="donadora-search" className="form-label">Buscar Donadora <FaSistrix /></label>
+            <div className="input-group">
               <input
-                className="form-check-input"
-                type="checkbox"
-                name="nueva"
-                id="nueva"
-                onChange={this.handleChange}
-                checked={form ? form.nueva : false}
+                type="text"
+                id="donadora-search"
+                className="form-control"
+                placeholder="Nombre de la donadora"
+                value={searchValue}
+                onChange={this.handleSearchChange}
               />
-              <label className="form-check-label" htmlFor="nueva">Nueva</label>
-              </div>
-
-              <label htmlFor="id_personal">Personal</label>
-              <select className="form-control" name="id_personal" onChange={this.handleChange} value={form ? form.id_personal : ''}>
-                <option value="">Seleccione personal</option>
-                {this.state.personales.map(personal => (
-                  <option key={personal.id_personal} value={personal.id_personal}>
-                    {personal.nombre} {personal.apellido}
-                  </option>
-                ))}
-              </select>
             </div>
-          </ModalBody>
-          <ModalFooter>
-            {this.state.tipoModal === 'insertar' ?
-              <button className="btn btn-success" onClick={() => this.peticionPost()}>Insertar</button> :
-              <button className="btn btn-primary" onClick={() => this.peticionPut()}>Actualizar</button>
-            }
-            <button className="btn btn-danger" onClick={() => this.modalInsertar()}>Cancelar</button>
-          </ModalFooter>
-        </Modal>
+            {this.state.showSuggestions && filteredDonadoras.length > 0 && (
+              <ul className="list-group mt-1">
+                {filteredDonadoras.map((donadora) => (
+                  <li
+                    key={donadora.id_donadora}
+                    className="list-group-item list-group-item-action"
+                    onClick={() => this.handleDonadoraSelect(donadora)}
+                  >
+                    {donadora.nombre} {donadora.apellido}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="id_donadora" className="form-label">Donadora <FaBaby /></label>
+            <div className="input-group">
+              <select 
+                className="form-control" 
+                name="id_donadora" 
+                onChange={this.handleChange} 
+                value={form ? form.id_donadora : ''}
+              >
+                <option value="">Seleccione una donadora</option>
+                {this.state.donadoras.map(donadora => (
+                  <option key={donadora.id_donadora} value={donadora.id_donadora}>
+                    {donadora.nombre} {donadora.apellido}
+                  </option>
+                ))}
+              </select>
+              <button 
+                className="btn btn-outline-secondary" 
+                type="button" 
+                onClick={this.modalInsertarDonadora}
+              >
+                Nueva Donadora
+              </button>
+            </div>
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="fecha" className="form-label">Fecha <FaCalendarDay /></label>
+            <input 
+              className="form-control" 
+              type="date" 
+              name="fecha" 
+              id="fecha" 
+              onChange={this.handleChange} 
+              value={form ? form.fecha : ''} 
+            />
+          </div>
+        </div>
+
+        {/* Columna Derecha */}
+        <div className="col-md-6">
+          <div className="form-group mb-3">
+            <label htmlFor="onzas" className="form-label">Onzas <FaTint/></label>
+            <input 
+              className="form-control" 
+              type="number" 
+              name="onzas" 
+              id="onzas" 
+              onChange={this.handleChange} 
+              value={form ? form.onzas : ''} 
+            />
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="litros" className="form-label">Litros < FaFlask /></label>
+            <input 
+              className="form-control" 
+              type="text" 
+              name="litros" 
+              id="litros" 
+              value={form ? form.litros : ''} 
+              readOnly 
+            />
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="id_extrahospitalario" className="form-label">Servicio Extrahospitalario <FaBuilding /> </label>
+            <select 
+              className="form-control" 
+              name="id_extrahospitalario" 
+              onChange={this.handleChange} 
+              value={form ? form.id_extrahospitalario : ''}
+            >
+              <option value="">Seleccione un servicio</option>
+              {this.state.serviciosEx.map(servicio => (
+                <option key={servicio.id_extrahospitalario} value={servicio.id_extrahospitalario}>
+                  {servicio.servicio}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="id_intrahospitalario" className="form-label">Servicio Intrahospitalario <FaClinicMedical /></label>
+            <select 
+              className="form-control" 
+              name="id_intrahospitalario" 
+              onChange={this.handleChange} 
+              value={form ? form.id_intrahospitalario : ''}
+            >
+              <option value="">Seleccione un servicio</option>
+              {this.state.serviciosIn.map(servicio => (
+                <option key={servicio.id_intrahospitalario} value={servicio.id_intrahospitalario}>
+                  {servicio.servicio}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6">
+              <div className="form-check mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="constante"
+                  id="constante"
+                  onChange={this.handleChange}
+                  checked={form ? form.constante : false}
+                />
+                <label className="form-check-label" htmlFor="constante">Constante</label>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-check mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="nueva"
+                  id="nueva"
+                  onChange={this.handleChange}
+                  checked={form ? form.nueva : false}
+                />
+                <label className="form-check-label" htmlFor="nueva">Nueva</label>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="id_personal" className="form-label">Personal <FaAddressCard /></label>
+            <select 
+              className="form-control" 
+              name="id_personal" 
+              onChange={this.handleChange} 
+              value={form ? form.id_personal : ''}
+            >
+              <option value="">Seleccione personal</option>
+              {this.state.personales.map(personal => (
+                <option key={personal.id_personal} value={personal.id_personal}>
+                  {personal.nombre} {personal.apellido}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ModalBody>
+  <ModalFooter>
+    {this.state.tipoModal === 'insertar' ? (
+      <button className="btn btn-success" onClick={() => this.peticionPost()}>
+        Insertar <FaClipboardCheck />
+
+      </button>
+    ) : (
+      <button className="btn btn-primary" onClick={() => this.peticionPut()}>
+        Actualizar <FaClipboardCheck />
+
+      </button>
+    )}
+    <button className="btn btn-danger" onClick={() => this.modalInsertar()}>
+      Cancelar
+    </button>
+  </ModalFooter>
+</Modal>
 
         <Modal isOpen={this.state.modalEliminar}>
           <ModalHeader>Eliminar Registro</ModalHeader>

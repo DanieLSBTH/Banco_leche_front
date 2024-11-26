@@ -32,7 +32,7 @@ import ShowEstimulacionPersonas from './components/Formularios/ShowEstimulacionP
 import ResumenEstimulacionNombre from './components/Formularios/ResumenEstimulacionNombre';
 import ResumenDonadoraNombre from './components/Formularios/ResumenDonadoraNombre';
 import ResumenControlLecheFrascos from './components/Formularios/ResumenControlLecheFrascos';
-
+import InsertarDonadoraModal from './components/Formularios/InsertarDonadoraModal';
 function App() {
   return (
     <AuthProvider>
@@ -44,6 +44,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /> </PrivateRoute>}/>
             <Route path="/showdonadora" element={<PrivateRoute><ShowDonadora /> </PrivateRoute>}/>
+            <Route path="/insertardonadoramodal" element={<PrivateRoute><InsertarDonadoraModal /> </PrivateRoute>}/>
             <Route path="/showpersonal" element={<PrivateRoute><ShowPersonal /> </PrivateRoute>}/>
             <Route path="/showusuario" element={<PrivateRoute><ShowUsuario /> </PrivateRoute>}/>
 
