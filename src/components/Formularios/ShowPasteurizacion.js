@@ -45,31 +45,49 @@ class ShowPasteurizacion extends Component {
     // Usa la función navigate pasada como prop
     this.props.navigate('/resumenpasteurizacion');
   };
+  // Add more detailed logging to understand what's happening
   peticionGet = () => {
     const { page, rows, mostrarTodos } = this.state;
-    const params = mostrarTodos ? '' : '&mesActual=true';
+    
+    // Preparar los parámetros de la solicitud
+    const params = new URLSearchParams({
+      page: page,            // Número de página
+      pageSize: rows,        // Tamaño de página
+      mesActual: mostrarTodos ? 'false' : 'true'  // Modificado para ser más explícito
+    });
+  
+    console.log('Parámetros de solicitud:', params.toString());
+    
     axios
-      .get(`${url}?page=${page}&limit=${rows}${params}`)
+      .get(`${url}?${params.toString()}`)
       .then(response => {
+        console.log('Respuesta completa:', response.data);
+        
         this.setState({ 
           pasteurizaciones: response.data.pasteurizaciones || [], 
-          totalRecords: response.data.totalRecords || 0 
+          totalRecords: response.data.totalRecords || 0,
+          currentPage: response.data.currentPage || 1,
+          totalPages: response.data.totalPages || 1
         });
       })
       .catch(error => {
-        console.error('Error fetching data:', error);
+        console.error('Error detallado:', error.response || error);
         Swal.fire('Error', 'No se pudo cargar la lista de pasteurizaciones', 'error');
       });
   };
-
-   // Cambiar página
-   onPageChange = (event) => {
-    const newPage = event.page + 1;
-    this.setState({ page: newPage }, () => {
-      this.peticionGet(); // Actualizar los datos de la página
+  
+  
+  // Update the onPageChange method
+  onPageChange = (event) => {
+    const newPage = event.page + 1; // PrimeReact usa índices basados en cero
+    
+    this.setState({ 
+      page: newPage 
+    }, () => {
+      this.peticionGet(); // Obtener datos para la nueva página
     });
   };
-
+  
   peticionPost = async () => {
     delete this.state.form.id_pasteurizacion;
     await axios.post(url, this.state.form).then(response => {
@@ -148,7 +166,7 @@ class ShowPasteurizacion extends Component {
   }
 
   render() {
-    const { form, totalRecords, rows, page } = this.state;
+    const {pasteurizaciones, form, totalRecords, rows, page,currentPage, totalPages } = this.state;
     const navigate = this.props.navigate; // Obtenemos la función navigate desde props
 
     return (
@@ -161,6 +179,21 @@ class ShowPasteurizacion extends Component {
           Mostrar Resumen por Servicio
           </Button>
         </div>
+        <div className="form-check mb-3">
+        <input 
+          type="checkbox" 
+          className="form-check-input" 
+          id="mostrarTodos"
+          checked={!this.state.mostrarTodos}
+          onChange={() => this.setState({ 
+            mostrarTodos: !this.state.mostrarTodos, 
+            page: 1 
+          }, () => this.peticionGet())}
+        />
+        <label className="form-check-label" htmlFor="mostrarTodos">
+          Mostrar solo del mes actual
+        </label>
+      </div>
 
         <div className="table-responsive">
         <table className="table table-striped table-hover">
@@ -225,12 +258,13 @@ class ShowPasteurizacion extends Component {
         </div>
         <div className="d-flex justify-content-center mt-3">      
         <Paginator 
-        first={(page - 1) * rows} 
-        rows={rows} 
-        totalRecords={totalRecords} 
-        onPageChange={this.onPageChange} 
+          first={(page - 1) * rows} 
+          rows={rows} 
+          totalRecords={totalRecords} 
+          onPageChange={this.onPageChange}
+          totalPages={totalPages}
         /> 
-        </div>
+      </div>
         <div className="modal-dialog">
           <Modal size="lg" isOpen={this.state.modalInsertar} toggle={() => this.modalInsertar()}>
             <ModalHeader toggle={() => this.modalInsertar()}>{this.state.tipoModal === 'insertar' ? 'Insertar Pasteurización' : 'Editar Pasteurización'}</ModalHeader>
