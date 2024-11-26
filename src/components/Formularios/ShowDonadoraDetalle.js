@@ -1,4 +1,4 @@
-
+import React, { Component } from 'react';
 import axios from 'axios';
 import { Paginator } from 'primereact/paginator';
 import Swal from 'sweetalert2';
