@@ -9,7 +9,7 @@ import { FaChartBar } from 'react-icons/fa';
 import { Button } from 'reactstrap';
 
 const urlControlLeche = "https://banco-leche-backend.onrender.com/api/control_de_leches/";
-const urlTrabajoPasteurizaciones = "https://banco-leche-backend.onrender.com/api/trabajo_de_pasteurizaciones/";
+const urlTrabajoPasteurizaciones = "https://banco-leche-backend.onrender.com/api/trabajo_de_pasteurizaciones/available";
 
 
 
@@ -188,6 +188,7 @@ class ShowControlLeche extends Component {
         const response = await axios.post(urlControlLeche, dataToSend);
         this.modalInsertar();
         this.fetchControlLeches(currentPage, pageSize);
+        this.fetchPasteurizaciones();
         Swal.fire('Éxito', 'Registro creado exitosamente', 'success');
       } catch (error) {
         console.log('Error al crear el registro:', error.message);

@@ -179,7 +179,7 @@ class ShowPasteurizacion extends Component {
           Mostrar Resumen por Servicio
           </Button>
         </div>
-        <div className="form-check mb-3">
+          <div className="form-check mb-3">
         <input 
           type="checkbox" 
           className="form-check-input" 
@@ -348,3 +348,4 @@ function ShowPasteurizacionWrapper() {
 
 
 export default ShowPasteurizacionWrapper;
+
