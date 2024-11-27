@@ -23,7 +23,7 @@ const ResumenEstimulacion = () => {
     if (fechaInicio && fechaFin) {
       try {
         const response = await axios.get(
-          `https://banco-leche-backend.onrender.com/api/estimulacion/estimulacion-resumen?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
+          `https://banco-de-leche.onrender.com/api/estimulacion/estimulacion-resumen?fechaInicio=${fechaInicio.toISOString().split('T')[0]}&fechaFin=${fechaFin.toISOString().split('T')[0]}`
         );
         setResumen(response.data);
       } catch (error) {
@@ -43,6 +43,8 @@ const ResumenEstimulacion = () => {
   };
 
   const handlePrint = async () => {
+    if (!resumen) return;
+
     const doc = new jsPDF();
 
     const imgLogo = new Image();
@@ -52,27 +54,41 @@ const ResumenEstimulacion = () => {
     const fechaInicioFormatted = fechaInicio ? fechaInicio.toLocaleDateString() : 'N/A';
     const fechaFinFormatted = fechaFin ? fechaFin.toLocaleDateString() : 'N/A';
     doc.setFontSize(12);
-    doc.text('Dr. Miguel Angel Soto Galindo',75,20);
-    doc.text('Coordinador Banco de Leche Humana',69,25);
-    doc.text('Jefe Departamento de Pediatría ',75,30);
+    doc.text('Dr. Miguel Angel Soto Galindo', 75, 20);
+    doc.text('Coordinador Banco de Leche Humana', 69, 25);
+    doc.text('Jefe Departamento de Pediatría ', 75, 30);
     doc.setFontSize(14);
     doc.text(`Resumen de Estimulación de ${fechaInicioFormatted} a ${fechaFinFormatted}`, 50, 43);
 
+    // Totales generales
     doc.autoTable({
       head: [['Total Estimulaciones', 'Total Nuevas', 'Total Constantes', 'Total Personas']],
-      body: [[resumen.totalEstimulaciones, resumen.totalNuevas, resumen.totalConstantes, resumen.totalPersonas]],
+      body: [[resumen.totalEstimulaciones,resumen.totalNuevas, resumen.totalConstantes, resumen.totalPersonas ]],
       startY: 45,
     });
 
-    const tableData = resumen.totalPorServicio.map((servicio) => [
-      servicio.servicio_ins.servicio,
-      servicio.total,
-    ]);
-
+    // Servicios Intrahospitalarios
     doc.autoTable({
-      head: [['Servicio', 'Total']],
-      body: tableData,
+      head: [['Servicio Intrahospitalario', 'Total Estimulaciones', 'Total Nuevas', 'Total Constantes']],
+      body: resumen.serviciosIntrahospitalarios.map(servicio => [
+        servicio.servicio,
+        servicio.total_estimulaciones,
+        servicio.total_nuevas,
+        servicio.total_constantes
+      ]),
       margin: { top: 60 },
+    });
+
+    // Servicios Extrahospitalarios
+    doc.autoTable({
+      head: [['Servicio Extrahospitalario', 'Total Estimulaciones', 'Total Nuevas', 'Total Constantes']],
+      body: resumen.serviciosExtrahospitalarios.map(servicio => [
+        servicio.servicio,
+        servicio.total_estimulaciones,
+        servicio.total_nuevas,
+        servicio.total_constantes
+      ]),
+      margin: { top: doc.lastAutoTable.finalY + 10 },
     });
 
     const chart = document.getElementById('graficoEstimulacion');
@@ -80,22 +96,40 @@ const ResumenEstimulacion = () => {
     const imgGrafica = canvasGrafica.toDataURL('image/png');
     doc.addImage(imgGrafica, 'PNG', 10, doc.lastAutoTable.finalY + 10, 190, 100);
 
-    
     doc.save('ResumenEstimulacion.pdf');
   };
 
-  const chartData = resumen
-    ? {
-        labels: resumen.totalPorServicio.map((servicio) => servicio.servicio_ins.servicio),
-        datasets: [
-          {
-            label: 'Total por Servicio',
-            data: resumen.totalPorServicio.map((servicio) => servicio.total),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          },
-        ],
-      }
-    : { labels: [], datasets: [] };
+  const prepareChartData = () => {
+    if (!resumen) return { labels: [], datasets: [] };
+
+    // Combine intrahospitalarios and extrahospitalarios
+    const allServicios = [
+      ...resumen.serviciosIntrahospitalarios,
+      ...resumen.serviciosExtrahospitalarios
+    ];
+
+    return {
+      labels: allServicios.map(servicio => servicio.servicio),
+      datasets: [
+        {
+          label: 'Total Estimulaciones por Servicio',
+          data: allServicios.map(servicio => servicio.total_estimulaciones),
+          backgroundColor: 'rgba(75, 192, 192, 0.6)', 
+        },
+        {
+          label: 'Total Nuevas',
+          data: allServicios.map(servicio => servicio.total_nuevas),
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+        },
+        {
+          label: 'Total Constantes',
+          data: allServicios.map(servicio => servicio.total_constantes),
+          backgroundColor: 'rgba(255, 159, 64, 0.6)',
+        },
+
+      ],
+    };
+  };
 
   addLocale('es', {
     firstDayOfWeek: 1,
@@ -159,6 +193,8 @@ const ResumenEstimulacion = () => {
                 <th>Total Nuevas</th>
                 <th>Total Constantes</th>
                 <th>Total Personas</th>
+               
+
               </tr>
             </thead>
             <tbody>
@@ -177,34 +213,61 @@ const ResumenEstimulacion = () => {
         <FaPrint className="me-2" /> Imprimir Resumen
       </Button>
 
-      <Table striped responsive className="mt-4">
-        <thead>
-          <tr>
-            <th>Servicio</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {resumen && resumen.totalPorServicio.length > 0 ? (
-            resumen.totalPorServicio.map((servicio, index) => (
-              <tr key={index}>
-                <td>{servicio.servicio_ins.servicio}</td>
-                <td>{servicio.total}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="2" className="text-center">
-                No se encontraron resultados.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+      {resumen && (
+        <>
+          <div className="mt-4">
+            <h5>Servicios Intrahospitalarios</h5>
+            <Table striped responsive>
+              <thead>
+                <tr>
+                  <th>Servicio</th>
+                  <th>Total Estimulaciones</th>
+                  <th>Total Nuevas</th>
+                  <th>Total Constantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resumen.serviciosIntrahospitalarios.map((servicio, index) => (
+                  <tr key={index}>
+                    <td>{servicio.servicio}</td>
+                    <td>{servicio.total_estimulaciones}</td>
+                    <td>{servicio.total_nuevas}</td>
+                    <td>{servicio.total_constantes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          <div className="mt-4">
+            <h5>Servicios Extrahospitalarios</h5>
+            <Table striped responsive>
+              <thead>
+                <tr>
+                  <th>Servicio</th>
+                  <th>Total Estimulaciones</th>
+                  <th>Total Nuevas</th>
+                  <th>Total Constantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resumen.serviciosExtrahospitalarios.map((servicio, index) => (
+                  <tr key={index}>
+                    <td>{servicio.servicio}</td>
+                    <td>{servicio.total_estimulaciones}</td>
+                    <td>{servicio.total_nuevas}</td>
+                    <td>{servicio.total_constantes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </>
+      )}
 
       <div className="my-5" id="graficoEstimulacion">
         <h4>Visualización de Datos por Servicio</h4>
-        <Bar data={chartData} options={{ responsive: true }} />
+        <Bar data={prepareChartData()} options={{ responsive: true }} />
       </div>
     </Container>
   );

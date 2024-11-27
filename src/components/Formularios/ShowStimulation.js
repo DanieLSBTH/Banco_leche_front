@@ -4,13 +4,15 @@ import Swal from 'sweetalert2';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { Paginator } from 'primereact/paginator';
-import { FaChartBar } from 'react-icons/fa';
+import { FcCollaboration } from "react-icons/fc";
+import { FaChartBar,FaClinicMedical , FaAddressCard ,FaUserCheck,FaHospitalAlt,FaUserPlus,FaHospitalUser,FaSistrix,FaCalendarDay,FaClipboardCheck } from 'react-icons/fa';
 import { Button } from 'reactstrap';
 import InsertarPersonaModal from './InsertarPersonaModal';
-const url = "https://banco-leche-backend.onrender.com/api/estimulacion/";
-const personalUrl = 'https://banco-leche-backend.onrender.com/api/personal_estimulacion/';
-const servicioUrl = 'https://banco-leche-backend.onrender.com/api/servicio_in/';
-const personalUrl1= 'https://banco-leche-backend.onrender.com/api/personal/';
+const url = "https://banco-de-leche.onrender.com/api/estimulacion/";
+const personalUrl = 'https://banco-de-leche.onrender.com/api/personal_estimulacion/';
+const servicioUrl = 'https://banco-de-leche.onrender.com/api/servicio_in/';
+const personalUrl1= 'https://banco-de-leche.onrender.com/api/personal/';
+const urlServicioEx = "https://banco-de-leche.onrender.com/api/servicio_ex/";
 
 class ShowStimulation extends Component {
   constructor(props) {
@@ -20,6 +22,7 @@ class ShowStimulation extends Component {
       personal: [],
       personal1:[],
       servicios: [],
+      serviciosex:[],
       searchPersonal: '', // Nuevo estado para la búsqueda de personal
       filteredPersonal: [], // Nuevo estado para los resultados filtrados
       modalInsertar: false,
@@ -43,6 +46,7 @@ class ShowStimulation extends Component {
     id_intrahospitalario: '',
     constante: false,
     nueva: false,
+    id_extrahospitalario: '',
   });
 
   componentDidMount() {
@@ -61,7 +65,7 @@ class ShowStimulation extends Component {
     );
   };
   obtenerPersonal = async () => {
-    const response = await axios.get('https://banco-leche-backend.onrender.com/api/personal_estimulacion/');
+    const response = await axios.get('https://banco-de-leche.onrender.com/api/personal_estimulacion/');
     this.setState({ personal: response.map });
   };
 
@@ -150,14 +154,23 @@ class ShowStimulation extends Component {
   };
 
   validateForm = () => {
-    const { id_personal_estimulacion, fecha, id_intrahospitalario, id_personal } = this.state.form;
-    console.log('Validating:', { id_personal_estimulacion, fecha, id_intrahospitalario, id_personal });
-    if (!id_personal_estimulacion || !fecha || !id_intrahospitalario || !id_personal) {
+    const { id_personal_estimulacion, fecha, id_personal, id_intrahospitalario, id_extrahospitalario } = this.state.form;
+    
+    // Validate mandatory fields
+    if (!id_personal_estimulacion || !fecha || !id_personal) {
       Swal.fire('Error', 'Todos los campos son obligatorios', 'error');
       return false;
     }
+  
+    // Ensure at least one service is selected
+    if (!id_intrahospitalario && !id_extrahospitalario) {
+      Swal.fire('Error', 'Debe seleccionar un servicio', 'error');
+      return false;
+    }
+  
     return true;
   };
+
   
 
 
@@ -165,19 +178,27 @@ class ShowStimulation extends Component {
     if (!this.validateForm()) return;
   
     try {
-      // Adjust the date for timezone before sending to server
       const formData = {
         ...this.state.form,
-        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0] // Format as YYYY-MM-DD
+        fecha: new Date(this.state.form.fecha).toISOString().split('T')[0],
+        id_intrahospitalario: this.state.form.id_intrahospitalario || null,
+        id_extrahospitalario: this.state.form.id_extrahospitalario || null,
+        id_personal_estimulacion: parseInt(this.state.form.id_personal_estimulacion),
+        id_personal: parseInt(this.state.form.id_personal),
+        constante: Boolean(this.state.form.constante),
+        nueva: Boolean(this.state.form.nueva)
       };
-      
+  
+      // Log the payload for debugging
+      console.log('Sending payload:', formData);
+    
       await axios.post(url, formData);
       this.modalInsertar();
       this.peticionGet();
       Swal.fire('Éxito', 'Estimulación agregada exitosamente', 'success');
     } catch (error) {
-      Swal.fire('Error', 'No se pudo agregar la estimulación', 'error');
-      console.error('Error al agregar estimulación:', error);
+      console.error('Full error response:', error.response);
+      Swal.fire('Error', 'No se pudo agregar la estimulación: ' + (error.response?.data?.message || error.message), 'error');
     }
   };
   
@@ -192,7 +213,8 @@ class ShowStimulation extends Component {
         constante: Boolean(this.state.form.constante),
         nueva: Boolean(this.state.form.nueva),
         fecha: new Date(this.state.form.fecha).toISOString().split('T')[0], // Format as YYYY-MM-DD
-        id_personal: parseInt(this.state.form.id_personal)
+        id_personal: parseInt(this.state.form.id_personal),
+        id_extrahospitalario: parseInt(this.state.form.id_extrahospitalario)
       };
   
       await axios.put(`${url}${this.state.form.id_estimulacion}`, formData);
@@ -219,19 +241,22 @@ class ShowStimulation extends Component {
 
   cargarPersonalYServicios = async () => {
     try {
-      const [personalResponse, servicioResponse] = await Promise.all([
+      const [personalResponse, servicioResponse, servicioeResponse] = await Promise.all([
         axios.get(personalUrl),
-        axios.get(servicioUrl)
+        axios.get(servicioUrl),
+        axios.get(urlServicioEx)
+
       ]);
 
       this.setState({
         personal: personalResponse.data?.personal_estimulaciones || personalResponse.data || [],
-        servicios: servicioResponse.data?.servicios || servicioResponse.data || []
+        servicios: servicioResponse.data?.servicios || servicioResponse.data || [],
+        serviciosex: servicioeResponse.data?.serviciosex || servicioeResponse.data || [],
       });
     } catch (error) {
       console.error('Error al cargar personal y servicios:', error);
       Swal.fire('Error', 'Error al cargar datos de personal y servicios', 'error');
-      this.setState({ personal: [], servicios: [] });
+      this.setState({ personal: [], servicios: [], serviciosex:[] });
     }
   };
 
@@ -245,13 +270,16 @@ class ShowStimulation extends Component {
         form: {
             ...estimulacion,
             fecha: fechaFormateada,
-            id_personal_estimulacion: estimulacion.id_personal_estimulacion.toString(),
-            id_intrahospitalario: estimulacion.id_intrahospitalario.toString(),
+            // Safely handle potential null values with optional chaining and fallback
+            id_personal_estimulacion: estimulacion.id_personal_estimulacion ? estimulacion.id_personal_estimulacion.toString() : '',
+            id_intrahospitalario: estimulacion.id_intrahospitalario ? estimulacion.id_intrahospitalario.toString() : '',
+            id_extrahospitalario: estimulacion.id_extrahospitalario ? estimulacion.id_extrahospitalario.toString() : '',
+            id_personal: estimulacion.id_personal ? estimulacion.id_personal.toString() : '',
             constante: Boolean(estimulacion.constante),
             nueva: Boolean(estimulacion.nueva)
         }
     });
-};
+  };
 
 modalInsertar = () => {
   this.setState(prevState => ({
@@ -262,27 +290,44 @@ modalInsertar = () => {
   }));
 };
 
-  handleChange = (e) => {
-    const { name, type, checked, value } = e.target;
-    let val = type === 'checkbox' ? checked : value;
-    
-    // Si es un campo numérico, asegurarse de que sea string
-    if (name === 'id_personal_estimulacion' || name === 'id_intrahospitalario') {
-      val = value.toString();
-    }
-    if (name === 'id_personal') {
-      val = value.toString();
-    }
-    
-    this.setState(prevState => ({
-      form: {
-        ...prevState.form,
-        [name]: val,
-        ...(type === 'checkbox' && name === 'constante' && checked && { nueva: false }),
-        ...(type === 'checkbox' && name === 'nueva' && checked && { constante: false })
+handleChange = (e) => {
+  const { name, type, checked, value } = e.target;
+  let val = type === 'checkbox' ? checked : value;
+
+  // Ensure proper type conversion
+  if (
+    name === 'id_personal_estimulacion' ||
+    name === 'id_intrahospitalario' ||
+    name === 'id_personal' ||
+    name === 'id_extrahospitalario'
+  ) {
+    // Convert to string, but allow null/empty string
+    val = value === '' ? null : value.toString();
+  }
+
+  this.setState(prevState => {
+    let newForm = { ...prevState.form, [name]: val };
+
+    // Mutually exclusive service selection
+    if (name === 'id_extrahospitalario' || name === 'id_intrahospitalario') {
+      if (val) {
+        newForm.id_extrahospitalario = name === 'id_extrahospitalario' ? val : null;
+        newForm.id_intrahospitalario = name === 'id_intrahospitalario' ? val : null;
       }
-    }));
-  };
+    }
+
+    // Mutually exclusive checkbox logic
+    if (type === 'checkbox') {
+      if (name === 'constante' && checked) {
+        newForm.nueva = false;
+      } else if (name === 'nueva' && checked) {
+        newForm.constante = false;
+      }
+    }
+
+    return { form: newForm };
+  });
+};
 
   onPageChange = (event) => {
     this.setState({
@@ -299,7 +344,7 @@ modalInsertar = () => {
 
  
   render() {
-    const { isLoading, form, personal, servicios, estimulaciones, totalRecords, currentPage, rowsPerPage, searchTerm } = this.state;
+    const { isLoading, form, personal, servicios, serviciosex,estimulaciones, totalRecords, currentPage, rowsPerPage, searchTerm } = this.state;
     const navigate = this.props.navigate;
     if (isLoading) {
       return <div className="text-center mt-5">Cargando datos...</div>;
@@ -308,26 +353,27 @@ modalInsertar = () => {
     return (
       <div className="App">
         <br />
-        <button className="btn btn-success" onClick={() => {
-          this.setState({
-            form: this.getInitialFormState(),
-            tipoModal: 'insertar',
-            selectedPersona: '' 
-          }, this.modalInsertar);
-        }}>
-          Agregar Estimulación
-        </button>
-        <br /><br />
-        <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
-          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
-          Mostrar Resumen estimulacion
-          </Button>
-          <br /><br />
-          <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
-          <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
-          Mostrar Resumen por nombre
-          </Button>
+        <div className="d-flex justify-content-between align-items-center gap-2">
+  <button className="btn btn-success" onClick={() => {
+    this.setState({
+      form: this.getInitialFormState(),
+      tipoModal: 'insertar',
+      selectedPersona: '' 
+    }, this.modalInsertar);
+  }}>
+    Agregar Estimulación <FaClinicMedical />
+  </button>
 
+  <Button color="info" onClick={this.handleNavigate} className="d-flex align-items-center">
+    <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
+    Mostrar Resumen Estimulación
+  </Button>
+
+  <Button color="info" onClick={this.handleNavigate2} className="d-flex align-items-center">
+    <FaChartBar className="me-2" /> {/* Ícono a la izquierda */}
+    Mostrar Resumen por Nombre
+  </Button>
+</div>
         {estimulaciones.length === 0 ? (
           <div className="alert alert-info">No hay datos de estimulaciones disponibles</div>
         ) : (
@@ -339,7 +385,8 @@ modalInsertar = () => {
                   <th>ID</th>
                   <th>Persona-estimulada</th>
                   <th>Fecha</th>
-                  <th>Servicio</th>
+                  <th>Servicio Intrahospitalario</th>
+                  <th>Servicio Extrahospitalario</th>
                   <th>Constante</th>
                   <th>Nueva</th>
                   <th>Personal</th>
@@ -353,10 +400,12 @@ modalInsertar = () => {
                     <td>{estimulacion.id_estimulacion}</td>
                     <td>{estimulacion.personal_estimulaciones?.nombre +' '+ estimulacion.personal_estimulaciones?.apellido }</td>
                     <td>{this.formatDateForDisplay(estimulacion.fecha)}</td>
-                    <td>{estimulacion.servicio_ins?.servicio || 'N/A'}</td>
+                    <td>{estimulacion.servicio_ins?.servicio }</td>
+                    <td>{estimulacion.servicio_exes?.servicio }</td>
                     <td> <input type="checkbox"checked={estimulacion.constante}disabledstyle={{ accentColor: "blue" }} /></td>
                     <td> <input type="checkbox"checked={estimulacion.nueva} disabledstyle={{ accentColor: "blue" }} /></td>
                     <td>{estimulacion.personals?.nombre || 'N/A'}</td>
+                   
                     
                     <td>
                     <button className="btn btn-primary" onClick={() => this.seleccionarEstimulacion(estimulacion)}>Editar</button>
@@ -391,17 +440,23 @@ modalInsertar = () => {
           </>
         )}
 
-<Modal isOpen={this.state.modalInsertar}>
+<Modal isOpen={this.state.modalInsertar }size="lg">
           <ModalHeader>
-            {this.state.tipoModal === 'insertar' ? 'Insertar Estimulación' : 'Editar Estimulación'}
+            {this.state.tipoModal === 'insertar' ? 'Insertar Estimulación' : 'Editar Estimulación'}<FcCollaboration />
           
           </ModalHeader>
           <ModalBody>
-             {/* Botón para abrir el modal de agregar persona */}
-             <button className="btn btn-outline-secondary" type="button" onClick={this.toggleInsertarPersonaModal}>Agregar Nueva Persona</button>
+            {/* Botón para abrir el modal de agregar persona */}
               {/* Barra de búsqueda de personal */}
+         
+              <div className="container-fluid">
+              <button className="btn btn-outline-secondary" type="button" onClick={this.toggleInsertarPersonaModal}>Nueva Persona <FaUserPlus /></button>
+            
+      <div className="row g-3">
+        {/* Columna Izquierda */}
+        <div className="col-md-6">     
     <div className="form-group mb-3">
-      <label htmlFor="searchPersonal">Buscar Persona estimulada</label>
+      <label htmlFor="searchPersonal">Buscar Persona estimulada <FaSistrix /></label>
       <input
         type="text"
         className="form-control"
@@ -457,7 +512,8 @@ modalInsertar = () => {
               </div>
             )}
             <div className="form-group">
-              <label htmlFor="id_personal_estimulacion">Persona estimulada </label>
+          
+              <label htmlFor="id_personal_estimulacion">Persona estimulada <FaUserCheck /></label>
               <select className="form-control" name="id_personal_estimulacion"
   value={this.state.selectedPersona || ''}
   onChange={(e) => {
@@ -469,19 +525,19 @@ modalInsertar = () => {
         id_personal_estimulacion: selectedId // Actualiza el estado del formulario
       }
     }));
-  }}
->
-
-          <option value="">Seleccione personal</option>
+  }}  
+> 
+        <option value="">Seleccione personal</option>
           {this.state.personal.map((personal) => (
             <option key={personal.id_personal_estimulacion} value={personal.id_personal_estimulacion}>
               {personal.nombre} {personal.apellido}
             </option>
           ))}
         </select>
+            
               <br />
 
-              <label htmlFor="fecha">Fecha </label>
+              <label htmlFor="fecha">Fecha <FaCalendarDay /> </label>
               <input
                 className="form-control"
                 type="date"
@@ -490,8 +546,12 @@ modalInsertar = () => {
                 onChange={this.handleChange}
               />
               <br />
-
-              <label htmlFor="id_intrahospitalario">Servicio </label>
+              </div>
+              </div>
+               {/* Columna Derecha */}
+        <div className="col-md-6">
+          <div className="form-group mb-3">
+              <label htmlFor="id_intrahospitalario">Servicio Intrahospitalario <FaHospitalAlt /></label>
               <select
                 className="form-control"
                 name="id_intrahospitalario"
@@ -505,6 +565,24 @@ modalInsertar = () => {
                     value={servicio.id_intrahospitalario.toString()}
                   >
                     {servicio.servicio}
+                  </option>
+                ))}
+              </select>
+              <br />
+              <label htmlFor="id_intrahospitalario">Servicio Extrahospitalario <FaHospitalUser /></label>
+              <select
+                className="form-control"
+                name="id_extrahospitalario"
+                value={form.id_extrahospitalario || ''}
+                onChange={this.handleChange}
+              >
+                <option value="">Seleccione Servicio</option>
+                {serviciosex.map(servicioe => (
+                  <option 
+                    key={servicioe.id_extrahospitalario} 
+                    value={servicioe.id_extrahospitalario.toString()}
+                  >
+                    {servicioe.servicio}
                   </option>
                 ))}
               </select>
@@ -532,11 +610,13 @@ modalInsertar = () => {
                   checked={form.nueva}
                   onChange={this.handleChange}
                 />
+                <div className="form-group mb-3">
                 <label className="form-check-label" htmlFor="nueva">
                   Nueva
                 </label>
               </div>
-              <br></br>
+             
+              <label htmlFor="id_personal" className="form-label">Personal <FaAddressCard /></label>
               <select className="form-control"
   name="id_personal"
   value={form.id_personal}
@@ -549,17 +629,22 @@ modalInsertar = () => {
     </option>
   ))}
 </select>
+</div>
+</div>
+</div>
+</div>
 
             </div>
+            
 
             </ModalBody>
           <ModalFooter>
             {this.state.tipoModal === 'insertar' ? 
               <button className="btn btn-success" onClick={this.peticionPost}>
-                Insertar
+                Insertar <FaClipboardCheck />
               </button>: 
               <button className="btn btn-primary" onClick={this.peticionPut}>
-                Actualizar
+                Actualizar <FaClipboardCheck />
               </button>
             }
             <button className="btn btn-danger" onClick={this.modalInsertar}>
