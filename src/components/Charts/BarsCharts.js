@@ -31,13 +31,15 @@ export default function BarsChart() {
                 const data = response.data;
 
                 const formattedData = data.map(item => ({
-                    mes: item.mes.replace(/(\w+)\s(\d+)/, (match, month, year) => {
-                        return `${monthMap[month]} ${year}`;  // Reemplaza el mes en inglés por español
+                    mes: item.mes.replace(/(\w+)\s+(\d+)/, (match, month, year) => {
+                        // Usamos trim() para asegurarnos de que no haya espacios adicionales
+                        const cleanMonth = month.trim();
+                        return `${monthMap[cleanMonth]} ${year}`; // Reemplaza el mes en inglés por español
                     }),
                     totalEstimulaciones: parseInt(item.total_estimulaciones, 10),
                     totalConstantes: parseInt(item.total_constantes, 10),
                     totalNuevas: parseInt(item.total_nuevas, 10)
-                }));
+                }));                
 
                 const totalEstimulaciones = formattedData.reduce((acc, item) => acc + item.totalEstimulaciones, 0);
                 const totalConstantes = formattedData.reduce((acc, item) => acc + item.totalConstantes, 0);
