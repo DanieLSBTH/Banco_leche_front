@@ -8,11 +8,11 @@ import { FcCollaboration } from "react-icons/fc";
 import { FaChartBar,FaClinicMedical , FaAddressCard ,FaUserCheck,FaHospitalAlt,FaUserPlus,FaHospitalUser,FaSistrix,FaCalendarDay,FaClipboardCheck } from 'react-icons/fa';
 import { Button } from 'reactstrap';
 import InsertarPersonaModal from './InsertarPersonaModal';
-const url = "https://banco-de-leche.onrender.com/api/estimulacion/";
-const personalUrl = 'https://banco-de-leche.onrender.com/api/personal_estimulacion/';
-const servicioUrl = 'https://banco-de-leche.onrender.com/api/servicio_in/';
-const personalUrl1= 'https://banco-de-leche.onrender.com/api/personal/';
-const urlServicioEx = "https://banco-de-leche.onrender.com/api/servicio_ex/";
+const url = "https://banco-leche-backend.onrender.com/api/estimulacion/";
+const personalUrl = 'https://banco-leche-backend.onrender.com/api/personal_estimulacion/';
+const servicioUrl = 'https://banco-leche-backend.onrender.com/api/servicio_in/';
+const personalUrl1= 'https://banco-leche-backend.onrender.com/api/personal/';
+const urlServicioEx = "https://banco-leche-backend.onrender.com/api/servicio_ex/";
 
 class ShowStimulation extends Component {
   constructor(props) {
@@ -65,7 +65,7 @@ class ShowStimulation extends Component {
     );
   };
   obtenerPersonal = async () => {
-    const response = await axios.get('https://banco-de-leche.onrender.com/api/personal_estimulacion/');
+    const response = await axios.get('https://banco-leche-backend.onrender.com/api/personal_estimulacion/');
     this.setState({ personal: response.map });
   };
 
