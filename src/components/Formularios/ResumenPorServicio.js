@@ -305,6 +305,63 @@ const ResumenPorServicio = () => {
           />
         </div>
       )}
+      {(resumenExtra.length > 0 || resumenIntra.length > 0) && (
+        <div className="my-5" id="graficoResumen">
+          <h4>Visualización de Datos Extrahospitalario</h4>
+          <Bar 
+            data={{
+              labels: [...resumenExtra].map(servicio => servicio.servicio),
+              datasets: [
+                {
+                  label: 'Total Donaciones',
+                  data: [...resumenExtra].map(servicio => servicio.total_donaciones),
+                  backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                },
+                {
+                  label: 'Total Donadoras',
+                  data: [...resumenExtra, ...resumenIntra].map(servicio => servicio.total_donadoras),
+                  backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                },
+                {
+                  label: 'Litros',
+                  data: [...resumenExtra].map(servicio => servicio.litros),
+                  backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                },
+              ],
+            }}
+            options={{ responsive: true }}
+          />
+        </div>
+      )}
+      {(resumenExtra.length > 0 || resumenIntra.length > 0) && (
+        <div className="my-5" id="graficoResumen">
+          <h4>Visualización de Datos Intrahospitalario</h4>
+          <Bar 
+            data={{
+              labels: [...resumenIntra].map(servicio => servicio.servicio),
+
+              datasets: [
+                {
+                  label: 'Total Donaciones',
+                  data: [...resumenIntra].map(servicio => servicio.total_donaciones),
+                  backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                },
+                {
+                  label: 'Total Donadoras',
+                  data: [...resumenIntra].map(servicio => servicio.total_donadoras),
+                  backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                },
+                {
+                  label: 'Litros',
+                  data: [...resumenIntra].map(servicio => servicio.litros),
+                  backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                },
+              ],
+            }}
+            options={{ responsive: true }}
+          />
+        </div>
+      )}
     </Container>
   );
 };
