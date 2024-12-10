@@ -2,11 +2,10 @@ import React, { useContext, useState,useEffect } from 'react';
 import { Navbar, Nav, NavDropdown, Container, Button, Offcanvas } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { FaHospital, FaRobot, FaComments, FaCommentAlt, FaPaperPlane, FaUsers, FaFemale, FaUserNurse, FaHospitalUser, FaUserMd, FaBaby, FaClipboard, FaChartLine, FaSignOutAlt, FaHeartbeat, FaFlask, FaWater, FaHandsHelping } from 'react-icons/fa';
+import { FaHospital, FaRobot,FaSignInAlt, FaComments, FaCommentAlt, FaPaperPlane, FaUsers, FaFemale, FaUserNurse, FaHospitalUser, FaUserMd, FaBaby, FaClipboard, FaChartLine, FaSignOutAlt, FaHeartbeat, FaFlask, FaWater, FaHandsHelping } from 'react-icons/fa';
 import './Navbar.css';
 import logo from '../Images/backgrounds/Logo_bancon.png';
-
-
+import ChatBotExampleAS from '../ChatBot/ChatBotExampleAs';
 
 const NavbarComponent = () => {
   const { auth, logout } = useContext(AuthContext);
@@ -95,56 +94,85 @@ const NavbarComponent = () => {
       <Button variant="outline-light" onClick={handleLogout} className="logout-btn">
         <FaSignOutAlt /> Cerrar Sesión
       </Button>
-           
+      
     </>
     
-    
   );
 
-  return (
-    <Navbar expand="lg" className="navbar" variant="dark">
-      <Container fluid>
-      <Navbar.Brand as={Link} to="/" className="navbar-logo ms-0"> {/* Añadimos ms-0 para quitar margen izquierdo */}
-          <img
-            src={logo}
-            width="80"
-            height="80"
-            className="d-inline-block align-top"
-            alt="Logo"
-          />
-        </Navbar.Brand>
-        {!auth.token && (
-          <div className="navbar-centered-title">
-            <h1>Banco de leche humana</h1>
-            <h2>Departamento de pediatría</h2>
-          </div>
-        )}
 
-        <Navbar.Toggle aria-controls="navbar-content" onClick={handleShow} />
-        
-        {/* Desktop view */}
-        <Navbar.Collapse id="navbar-content" className="d-none d-lg-flex justify-content-end">
-       
-          {auth.token && <NavContent />}
-          
-        </Navbar.Collapse>
-        
-        
-        
-        {/* Mobile view */}
-        <Offcanvas show={show} onHide={handleClose} placement="end" className="d-lg-none">
-          <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Menu</Offcanvas.Title>
-          </Offcanvas.Header>
-          <Offcanvas.Body>
-          
-            {auth.token && <NavContent />}
+    return (
+      <Navbar expand="lg" className="navbar" variant="dark">
+        <Container fluid className="d-flex justify-content-between align-items-center">
+          {/* Logo and title section */}
+          <div className="d-flex align-items-center">
+            <Navbar.Brand as={Link} to="/" className="navbar-logo ms-0">
+              <img
+                src={logo}
+                width="80"
+                height="80"
+                className="d-inline-block align-top"
+                alt="Logo"
+              />
+            </Navbar.Brand>
             
-          </Offcanvas.Body>
-        </Offcanvas>
-      </Container>
-    </Navbar>
-  );
-};
+            {!auth.token && (
+              <div className="navbar-centered-title d-none d-md-block">
+                <h1>Banco de leche humana</h1>
+                <h2>Departamento de pediatría</h2>
+              </div>
+            )}
+          </div>
+  
+          {/* Login button section */}
+          <div className="d-flex align-items-center">
+            {!auth.token && (
+              <Button
+                as={Link}
+                to="/login"
+                className="btn-modern-smooth ms-auto"
+              >
+                <FaSignInAlt className="icon me-2" />
+                Iniciar sesión
+              </Button>
+            )}
+  
+            {/* Navbar toggle button */}
+            <Navbar.Toggle 
+              aria-controls="navbar-content" 
+              onClick={handleShow} 
+              className="ms-2"
+            />
+          </div>
+  
+          {/* Desktop view */}
+          <Navbar.Collapse id="navbar-content" className="d-none d-lg-flex justify-content-end">
+            {auth.token && <NavContent />}
+          </Navbar.Collapse>
+          
+          {/* Mobile view */}
+          <Offcanvas show={show} onHide={handleClose} placement="end" className="d-lg-none">
+            <Offcanvas.Header closeButton>
+              <Offcanvas.Title>Menu</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+              {!auth.token && (
+                <div className="mb-3 text-center">
+                  <Button
+                    as={Link}
+                    to="/login"
+                    className="btn-modern-smooth w-100"
+                  >
+                    <FaSignInAlt className="icon me-2" />
+                    Iniciar sesión
+                  </Button>
+                </div>
+              )}
+              {auth.token && <NavContent />}
+            </Offcanvas.Body>
+          </Offcanvas>
+        </Container>
+      </Navbar>
+    );
+  };
 
 export default NavbarComponent;

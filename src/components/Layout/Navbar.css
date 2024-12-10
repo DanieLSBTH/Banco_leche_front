@@ -448,3 +448,75 @@
     font-size: 0.8rem;
   }
 }
+
+/* Botón moderno y suave */
+.btn-modern-smooth {
+  background: linear-gradient(90deg, #f4eefa60, #4a86ee68);
+  color: white;
+  font-weight: bold;
+  padding: 12px 25px;
+  border-radius: 30px;
+  border: none;
+  font-size: 16px;
+  text-transform: uppercase;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-modern-smooth:hover {
+  background: linear-gradient(90deg, #2574fc80, #b384e551);
+  transform: translateY(-2px);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-modern-smooth:active {
+  transform: translateY(1px);
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Animación de fondo */
+.btn-modern-smooth::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s, transform 0.6s;
+  transform: scale(0.5);
+  z-index: 0;
+}
+
+.btn-modern-smooth:hover::before {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.btn-modern-smooth .icon {
+  font-size: 20px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.btn-modern-smooth:hover .icon {
+  transform: rotate(360deg);
+}
+
+/* In your Navbar.css */
+.btn-modern-smooth {
+  /* Your existing styles */
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+@media (max-width: 576px) {
+  .navbar-logo img {
+    width: 60px;
+    height: 60px;
+  }
+}
