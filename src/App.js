@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Auth/Login';
 import Landpage from './components/Auth/Landpage';
 import Register from './components/Auth/Register';
@@ -27,35 +27,29 @@ import ShowChat from './components/ChatBot/ShowChat';
 import ShowSubChat from './components/ChatBot/ShowSubChat';
 import ShowChatRespuestas from './components/ChatBot/ShowChatRespuestas';
 import ShowUsuario from './components/Formularios/ShowUsuario';
-import ChatBotExampleAS from './components/ChatBot/ChatBotExampleAs';
+import ChatBot from './components/ChatBot/ChatBot';
 import ResumenPasteurizacion from './components/ChatBot/ResumenPasteurizacion';
 import ShowEstimulacionPersonas from './components/Formularios/ShowEstimulacionPersonas';
 import ResumenEstimulacionNombre from './components/Formularios/ResumenEstimulacionNombre';
-import ResumenDonadoraNombre from'./components/Formularios/ResumenDonadoraNombre';
+import ResumenDonadoraNombre from './components/Formularios/ResumenDonadoraNombre';
 import ResumenControlLecheFrascos from './components/Formularios/ResumenControlLecheFrascos';
-import ResumenRegistroMedico from './components/Formularios/ResumenRegistroMedico';
 import InsertarDonadoraModal from './components/Formularios/InsertarDonadoraModal';
-
 function App() {
-  
   return (
-    
     <AuthProvider>
-      
       <Router>
-
         <Navbar />
-        <ConditionalContainer>
+        <div className="container mt-4">
           <Routes>
           <Route path="/" element={<Landpage />}/>
-            <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /> </PrivateRoute>}/>
             <Route path="/showdonadora" element={<PrivateRoute><ShowDonadora /> </PrivateRoute>}/>
             <Route path="/insertardonadoramodal" element={<PrivateRoute><InsertarDonadoraModal /> </PrivateRoute>}/>
             <Route path="/showpersonal" element={<PrivateRoute><ShowPersonal /> </PrivateRoute>}/>
             <Route path="/showusuario" element={<PrivateRoute><ShowUsuario /> </PrivateRoute>}/>
-            
+
             <Route path="/showservicioex" element={<PrivateRoute><ShowServicioEx /> </PrivateRoute>}/>
             <Route path="/showservicioin" element={<PrivateRoute><ShowServicioIn /> </PrivateRoute>}/>
             <Route path="/showdonadoradetalle" element={<PrivateRoute><ShowDonadoraDetalle /></PrivateRoute>}/>
@@ -74,32 +68,20 @@ function App() {
             <Route path="/resumencontrollechefrascos" element={<PrivateRoute><ResumenControlLecheFrascos /></PrivateRoute>}/>
 
             <Route path="/showsolicitudleche" element={<PrivateRoute><ShowSolicitudLeche /></PrivateRoute>}/>
-            <Route path="/resumen-registro-medico" element={<PrivateRoute><ResumenRegistroMedico /></PrivateRoute>}/>
-            
             <Route path="/resumen-por-solicitud" element={<PrivateRoute><ResumenPorFechaSolicitud /></PrivateRoute>}/>
             <Route path="/chatbotexample" element={<PrivateRoute><ChatBotExample /></PrivateRoute>}/>
             <Route path="/showchat" element={<PrivateRoute><ShowChat /></PrivateRoute>}/>
             <Route path="/showsubchat" element={<PrivateRoute><ShowSubChat /></PrivateRoute>}/>
-            <Route path="/chatbotexampleas" element={<PrivateRoute><ChatBotExampleAS /></PrivateRoute>}/>
-            
+            <Route path="/chatbot" element={<PrivateRoute><ChatBot/></PrivateRoute>}/>
             <Route path="/showchatrespuestas" element={<PrivateRoute><ShowChatRespuestas /></PrivateRoute>}/>
             
             
             
           </Routes>
-          </ConditionalContainer>
+        </div>
       </Router>
     </AuthProvider>
   );
 }
 
-function ConditionalContainer({ children }) {
-  const location = useLocation();
-  const noContainerRoutes = ['/', '/login', '/register'];
-
-  const isNoContainer = noContainerRoutes.includes(location.pathname);
-
-  return isNoContainer ? <>{children}</> : <div className="container mt-4">{children}</div>;
-}
 export default App;
-
