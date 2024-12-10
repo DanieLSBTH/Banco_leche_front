@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './components/Auth/Login';
 import Landpage from './components/Auth/Landpage';
 import Register from './components/Auth/Register';
@@ -39,7 +39,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Navbar />
-        <div className="container mt-4">
+        <ConditionalContainer>
           <Routes>
           <Route path="/" element={<Landpage />}/>
           <Route path="/login" element={<Login />} />
@@ -78,10 +78,18 @@ function App() {
             
             
           </Routes>
-        </div>
+          </ConditionalContainer>
       </Router>
     </AuthProvider>
   );
 }
 
+function ConditionalContainer({ children }) {
+  const location = useLocation();
+  const noContainerRoutes = ['/', '/login', '/register'];
+
+  const isNoContainer = noContainerRoutes.includes(location.pathname);
+
+  return isNoContainer ? <>{children}</> : <div className="container mt-4">{children}</div>;
+}
 export default App;
