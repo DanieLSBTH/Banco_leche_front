@@ -105,6 +105,10 @@ class ShowDonadoraDetalle extends Component {
     // Usa la función navigate pasada como prop
     this.props.navigate('/resumendonadoranombre');
   };
+  handleNavigate3 = () => {
+    // Usa la función navigate pasada como prop
+    this.props.navigate('/topdonadoras');
+  };
 
   cargarListasRelacionadas = async () => {
     try {
@@ -422,6 +426,13 @@ onPageChange = (event) => {
         >
           <FaChartBar className="me-2" />
           Mostrar Resumen por Nombre
+        </button>
+        <button
+          className="btn btn-info d-flex align-items-center"
+          onClick={this.handleNavigate3}
+        >
+          <FaChartBar className="me-2" />
+          Mostrar Top donadoras 
         </button>
       </div>
     </div>

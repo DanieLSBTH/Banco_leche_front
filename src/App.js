@@ -34,6 +34,7 @@ import ResumenEstimulacionNombre from './components/Formularios/ResumenEstimulac
 import ResumenDonadoraNombre from './components/Formularios/ResumenDonadoraNombre';
 import ResumenControlLecheFrascos from './components/Formularios/ResumenControlLecheFrascos';
 import InsertarDonadoraModal from './components/Formularios/InsertarDonadoraModal';
+import TopDonadoras from './components/Formularios/TopDonadoras';
 function App() {
   return (
     <AuthProvider>
@@ -54,6 +55,7 @@ function App() {
             <Route path="/showservicioin" element={<PrivateRoute><ShowServicioIn /> </PrivateRoute>}/>
             <Route path="/showdonadoradetalle" element={<PrivateRoute><ShowDonadoraDetalle /></PrivateRoute>}/>
             <Route path="/resumendonadoranombre" element={<PrivateRoute><ResumenDonadoraNombre /></PrivateRoute>}/>
+            <Route path="/topdonadoras" element={<PrivateRoute><TopDonadoras /></PrivateRoute>}/>
             
             <Route path="/resumen-por-servicio" element={<PrivateRoute><ResumenPorServicio /></PrivateRoute>}/>
             <Route path="/resumenpasteurizacion" element={<PrivateRoute><ResumenPasteurizacion /></PrivateRoute>}/>
