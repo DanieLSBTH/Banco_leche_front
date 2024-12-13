@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Container, Row, Col } from 'reactstrap';
 import { useSpring, animated } from '@react-spring/web';
 import logo3 from '../Images/backgrounds/fondo_negro_2.jpg'; // Fondo negro
-
+import '../Css/Navidad.css';
 const HeroSection = () => {
   const featureProps = useSpring({
     from: { opacity: 0, transform: 'scale(0.9)' },
     to: { opacity: 1, transform: 'scale(1)' },
     config: { duration: 600 },
   });
+  const [snowflakes, setSnowflakes] = useState([]);
+  useEffect(() => {
+    // Generate snowflakes
+    const generateSnowflakes = () => {
+      const snowflakeCount = 20; // Adjust number of snowflakes
+      const newSnowflakes = Array.from({ length: snowflakeCount }, (_, index) => ({
+        id: index,
+        left: `${Math.random() * 100}%`,
+        animationDuration: `${5 + Math.random() * 10}s`,
+        size: `${5 + Math.random() * 10}px`
+      }));
+      setSnowflakes(newSnowflakes);
+  };
+
+  generateSnowflakes();
+  }, []);
 
   return (
     <animated.section
@@ -73,6 +89,22 @@ const HeroSection = () => {
           </Col>
         </Row>
       </Container>
+      <div className="snow-container">
+        {snowflakes.map((flake) => (
+          <div 
+            key={flake.id} 
+            className="snowflake"
+            style={{
+              left: flake.left,
+              animationDuration: flake.animationDuration,
+              width: flake.size,
+              height: flake.size
+            }}
+          >
+            ❄️
+          </div>
+        ))}
+      </div>
     </animated.section>
   );
 };

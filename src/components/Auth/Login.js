@@ -24,8 +24,10 @@ const Login = () => {
   const [images, setImages] = useState([]);
   const { login } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
+  const [snowflakes, setSnowflakes] = useState([]);
 
   const navigate = useNavigate();
+
 
   useEffect(() => {
     // Array de imágenes para la galería
@@ -103,6 +105,21 @@ const Login = () => {
       numVisible: 1
     }
   ];
+  useEffect(() => {
+    // Generate snowflakes
+    const generateSnowflakes = () => {
+      const snowflakeCount = 20; // Adjust number of snowflakes
+      const newSnowflakes = Array.from({ length: snowflakeCount }, (_, index) => ({
+        id: index,
+        left: `${Math.random() * 100}%`,
+        animationDuration: `${5 + Math.random() * 10}s`,
+        size: `${5 + Math.random() * 10}px`
+      }));
+      setSnowflakes(newSnowflakes);
+  };
+
+  generateSnowflakes();
+  }, []);
 
   return (
     <div className="login-container">
@@ -121,6 +138,22 @@ const Login = () => {
       </div>
       
       <div className="login-box">
+      <div className="snow-container">
+        {snowflakes.map((flake) => (
+          <div 
+            key={flake.id} 
+            className="snowflake"
+            style={{
+              left: flake.left,
+              animationDuration: flake.animationDuration,
+              width: flake.size,
+              height: flake.size
+            }}
+          >
+            ❄️
+          </div>
+        ))}
+      </div>
         <div className="flex justify-center items-center">
           <img src={logo} alt="Logo" className="custom-logo-size" />
         </div>
