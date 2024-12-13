@@ -153,8 +153,8 @@ const TopDonadoras = () => {
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th>Total Donaciones</th>
-                <th>Servicio</th>
+                <th>Apellido</th>
+                <th>Total Donaciones</th>  
                 <th>Total Onzas</th>
                 <th>Total Litros</th>
               </tr>
@@ -164,8 +164,8 @@ const TopDonadoras = () => {
                 topDonadoras.extrahospitalario.map((donadora) => (
                   <tr key={donadora.id_donadora}>
                     <td>{donadora.donadora_nombre}</td>
+                    <td>{donadora.donadora_apellido}</td>
                     <td>{donadora.total_donaciones}</td>
-                    <td>{donadora.servicio}</td>
                     <td>{donadora.total_onzas}</td>
                     <td>{donadora.total_litros}</td>
                   </tr>
@@ -190,8 +190,8 @@ const TopDonadoras = () => {
             <thead>
               <tr>
                 <th>Nombre</th>
+                <th>Apellido</th>
                 <th>Total Donaciones</th>
-                <th>Servicio</th>
                 <th>Total Onzas</th>
                 <th>Total Litros</th>
               </tr>
@@ -201,8 +201,8 @@ const TopDonadoras = () => {
                 topDonadoras.intrahospitalario.map((donadora) => (
                   <tr key={donadora.id_donadora}>
                     <td>{donadora.donadora_nombre}</td>
-                    <td>{donadora.total_donaciones}</td>
-                    <td>{donadora.servicio}</td>
+                    <td>{donadora.donadora_apellido}</td>
+                    <td>{donadora.total_donaciones}</td> 
                     <td>{donadora.total_onzas}</td>
                     <td>{donadora.total_litros}</td>
                   </tr>
