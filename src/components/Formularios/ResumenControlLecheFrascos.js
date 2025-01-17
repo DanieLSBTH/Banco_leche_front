@@ -59,22 +59,38 @@ const ResumenControlLecheFrascos = () => {
 
   const handlePrint = () => {
     if (!datosControl) return;
-
+  
     const doc = new jsPDF();
-     // Añadir logo
-     const imgLogo = new Image();
-     imgLogo.src = logo;
-     doc.addImage(imgLogo, 'PNG', 10, 10, 35, 33);
+    
+    // Añadir logo
+    const imgLogo = new Image();
+    imgLogo.src = logo;
+    doc.addImage(imgLogo, 'PNG', 10, 10, 35, 33);
+  
+    // Configuración del encabezado
     doc.setFontSize(14);
     doc.text('Control de Leche Pasteurizada', 75, 20);
-
+  
     doc.setFontSize(12);
     doc.text(`Período: ${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`, 77, 25);
     doc.text(`Total Frascos: ${datosControl.totalFrascos}`, 70, 30);
     doc.text(`Total Unidosis: ${datosControl.totalUnidosis}`, 120, 30);
-
-    // Tabla de registros
-    const tableColumn = [ "ID","No.Frasco", "Fecha Almacenamiento", "Volumen/ml", "kca/l", "Grasa %", "Acidez","Tipo leche","Fecha entrega", "responsable"];
+  
+    // Definición de columnas para la tabla
+    const tableColumn = [
+      "ID",
+      "No.Frasco",
+      "Fecha Almacenamiento",
+      "Volumen/ml",
+      "kca/l",
+      "Grasa %",
+      "Acidez",
+      "Tipo leche",
+      "Fecha entrega",
+      "responsable"
+    ];
+  
+    // Transformación de datos para la tabla
     const tableRows = datosControl.registros.map(registro => [
       '',
       registro.NoFrasco,
@@ -84,33 +100,41 @@ const ResumenControlLecheFrascos = () => {
       registro.Grasa,
       registro.Acidez,
       registro.TipoDeLeche,
-      
-     
     ]);
-
+  
+    // Configuración de colores por volumen
+    const volumeColors = {
+      10: [255, 0, 0],     // Rojo
+      20: [255, 165, 0],   // Naranja
+      30: [0, 255, 0]      // Verde
+    };
+  
+    // Configuración de la tabla
     doc.autoTable({
       head: [tableColumn],
-    body: tableRows,
-    startY: 50,
-    styles: { fontSize: 10 },
-    bodyStyles: { valign: "middle" },
-    didParseCell: function (data) {
-      // Verificar si la celda actual está en la columna "Volumen/ml" y la fila tiene un valor válido
-      if (data.column.index === 3) {
-        const cellValue = parseInt(data.cell.raw); // Extraer valor del volumen
-        if ([10, 20, 30].includes(cellValue)) {
-          // Cambiar el color de texto de toda la fila usando row.raw
-          Object.values(data.row.cells).forEach((cell) => {
-            cell.styles.textColor = [255, 165, 0]; 
-          });
+      body: tableRows,
+      startY: 50,
+      styles: { fontSize: 10 },
+      bodyStyles: { valign: "middle" },
+      didParseCell: function(data) {
+        // Verificar si es la columna de volumen (índice 3)
+        if (data.column.index === 3) {
+          // Extraer el valor numérico del volumen
+          const volumeStr = data.cell.raw;
+          const volume = parseInt(volumeStr);
+          
+          // Si el volumen tiene un color asociado, aplicarlo a toda la fila
+          if (volume in volumeColors) {
+            Object.values(data.row.cells).forEach((cell) => {
+              cell.styles.textColor = volumeColors[volume];
+            });
+          }
         }
       }
-    },
-  });
-
+    });
+  
     doc.save('ControlLecheFrascos.pdf');
   };
-
   return (
     <Container>
       <h3 className="my-4">Control de Leche - Pasteurizada</h3>
