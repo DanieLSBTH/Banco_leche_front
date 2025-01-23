@@ -138,22 +138,6 @@ const Login = () => {
       </div>
       
       <div className="login-box">
-      <div className="snow-container">
-        {snowflakes.map((flake) => (
-          <div 
-            key={flake.id} 
-            className="snowflake"
-            style={{
-              left: flake.left,
-              animationDuration: flake.animationDuration,
-              width: flake.size,
-              height: flake.size
-            }}
-          >
-            ❄️
-          </div>
-        ))}
-      </div>
         <div className="flex justify-center items-center">
           <img src={logo} alt="Logo" className="custom-logo-size" />
         </div>
