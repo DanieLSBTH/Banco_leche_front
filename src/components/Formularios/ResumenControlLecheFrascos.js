@@ -135,6 +135,7 @@ const ResumenControlLecheFrascos = () => {
   
     doc.save('ControlLecheFrascos.pdf');
   };
+
   return (
     <Container>
       <h3 className="my-4">Control de Leche - Pasteurizada</h3>
